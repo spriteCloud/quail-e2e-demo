@@ -13,6 +13,27 @@ jobs:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
 
+      - name: Diagnose GITHUB_TOKEN permissions
+        # TEMP: confirm the workflow's GITHUB_TOKEN actually carries
+        # contents:write at runtime. Curl prints the X-Accepted-GitHub-
+        # Permissions header which lists the perms the endpoint needs,
+        # plus the HTTP code so we can distinguish "no scope" (403) from
+        # "valid but denied" (401/422).
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "--- token meta ---"
+          curl -sv -H "Authorization: Bearer ${GH_TOKEN}" \
+            https://api.github.com/repos/${{ github.repository }} 2>&1 \
+            | grep -iE '^< (x-oauth-scopes|x-accepted-github-permissions|x-github-permissions|http/)'
+          echo "--- try writing an empty blob (cheap contents:write probe) ---"
+          curl -sw "\nHTTP %{http_code}\n" \
+            -X POST \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/git/blobs \
+            -d '{"content":"ping","encoding":"utf-8"}' || true
+
       - name: Connect to Netbird
         # SHA-pinned (not @main) so a malicious push to this third-party
         # action repo can't pivot into the runner.

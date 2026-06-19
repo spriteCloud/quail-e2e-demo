@@ -12,3 +12,10 @@ test-results/
 # PR diffs. Ignore them (the local probe still emits them; they just
 # never get committed).
 tests/e2e/_dom/
+
+# Quail also snapshots stakeholder docs into tests/e2e/docs/history/
+# (timestamped summary-*.html + findings-*.md) on every probe. The
+# canonical tests/e2e/docs/summary.html + findings.md stay tracked;
+# the timestamped history is local-only (quail serve still renders it
+# from the filesystem).
+tests/e2e/docs/history/

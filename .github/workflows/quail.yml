@@ -13,50 +13,6 @@ jobs:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
 
-      - name: Diagnose GITHUB_TOKEN permissions
-        # TEMP: confirm the workflow's GITHUB_TOKEN actually carries
-        # contents:write at runtime. Curl prints the X-Accepted-GitHub-
-        # Permissions header which lists the perms the endpoint needs,
-        # plus the HTTP code so we can distinguish "no scope" (403) from
-        # "valid but denied" (401/422).
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          echo "--- token meta ---"
-          curl -sv -H "Authorization: Bearer ${GH_TOKEN}" \
-            https://api.github.com/repos/${{ github.repository }} 2>&1 \
-            | grep -iE '^< (x-oauth-scopes|x-accepted-github-permissions|x-github-permissions|http/)'
-          echo "--- try writing an empty blob (cheap contents:write probe) ---"
-          curl -sw "\nHTTP %{http_code}\n" \
-            -X POST \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/git/blobs \
-            -d '{"content":"ping","encoding":"utf-8"}' || true
-          echo "--- try the failing CreateTree call quail makes ---"
-          MAIN_SHA=$(curl -s -H "Authorization: Bearer ${GH_TOKEN}" \
-            https://api.github.com/repos/${{ github.repository }}/git/refs/heads/main \
-            | jq -r '.object.sha')
-          echo "main sha=${MAIN_SHA}"
-          echo "--- attempt 1: CreateTree with inline content (how quail does it) ---"
-          curl -sw "\nHTTP %{http_code}\n" \
-            -X POST \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/git/trees" \
-            -d "{\"base_tree\":\"${MAIN_SHA}\",\"tree\":[{\"path\":\"diag-inline.txt\",\"mode\":\"100644\",\"type\":\"blob\",\"content\":\"inline-test\"}]}" || true
-          echo "--- attempt 2: CreateTree with explicit blob SHA ---"
-          BLOB_SHA=$(curl -s -X POST -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/git/blobs \
-            -d '{"content":"blob-test","encoding":"utf-8"}' | jq -r '.sha')
-          echo "blob sha=${BLOB_SHA}"
-          curl -sw "\nHTTP %{http_code}\n" \
-            -X POST \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/git/trees" \
-            -d "{\"base_tree\":\"${MAIN_SHA}\",\"tree\":[{\"path\":\"diag-sha.txt\",\"mode\":\"100644\",\"type\":\"blob\",\"sha\":\"${BLOB_SHA}\"}]}" || true
-
       - name: Connect to Netbird
         # SHA-pinned (not @main) so a malicious push to this third-party
         # action repo can't pivot into the runner.
@@ -96,7 +52,7 @@ jobs:
           # Pin the CLI to a specific release so this demo's bot output
           # is reproducible — clients can read the version off the
           # workflow file and run the exact same binary locally.
-          version: v0.95.0
+          version: v0.95.1
           # Probe fallback. When the PR diff yields no recognised new
           # symbols, `quail generate` still probes this URL so the
           # bot PR contains a fresh full suite. Required for this

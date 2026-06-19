@@ -1,0 +1,35 @@
+name: quail
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  quail:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Connect to Netbird
+        uses: Alemiz112/netbird-connect@b2bea07
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          hostname: gh-quail-${{ github.run_id }}
+
+      - name: Reach DGX through Netbird (fail fast if policy is broken)
+        run: |
+          curl -fsS -m 5 http://100.82.34.115:11434/api/version \
+            || { echo "::error::DGX unreachable; check Netbird policy / setup-key permissions"; exit 1; }
+
+      - uses: spriteCloud/quail@v1
+        with:
+          pr: ${{ github.event.pull_request.number }}
+          openai-base-url: http://100.82.34.115:11434/v1
+          openai-api-key: ollama
+          model: qwen3-coder-next:latest
+          heal-mode: on-failure
+          playwright-report: playwright-report.json
+          log-level: info

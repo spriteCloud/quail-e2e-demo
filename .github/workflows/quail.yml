@@ -19,6 +19,9 @@ jobs:
         uses: Alemiz112/netbird-connect@b2bea073dea42968276f717128c57e739dd514f3
         with:
           setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          # Self-hosted Netbird management plane; defaults to api.netbird.io
+          # in the action so we MUST pass it explicitly.
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
           hostname: gh-quail-${{ github.run_id }}
 
       - name: Reach DGX through Netbird (fail fast if policy is broken)

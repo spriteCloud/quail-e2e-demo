@@ -49,6 +49,12 @@ jobs:
       - uses: spriteCloud/quail@v1
         with:
           pr: ${{ github.event.pull_request.number }}
+          # Probe fallback. When the PR diff yields no recognised new
+          # symbols, `quail generate` still probes this URL so the
+          # bot PR contains a fresh full suite. Required for this
+          # demo since Subscribe.ts is a class export that the TS
+          # AST extractor doesn't flag as a journey-bearing symbol.
+          target-urls: https://www.spritecloud.com
           openai-base-url: http://100.82.34.115:11434/v1
           openai-api-key: ollama
           model: qwen3-coder-next:latest

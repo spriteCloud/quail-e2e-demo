@@ -24,10 +24,27 @@ jobs:
           management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
           hostname: gh-quail-${{ github.run_id }}
 
-      - name: Reach DGX through Netbird (fail fast if policy is broken)
+      - name: Reach DGX through Netbird (with WireGuard handshake wait)
+        # `netbird up` returning "Connected" only means the management
+        # plane handshake finished — the actual peer-to-peer WireGuard
+        # tunnels are established lazily. Retry the DGX endpoint for up
+        # to 60s; on the way out, dump the peer state so failures are
+        # diagnosable from the log alone.
         run: |
-          curl -fsS -m 5 http://100.82.34.115:11434/api/version \
-            || { echo "::error::DGX unreachable; check Netbird policy / setup-key permissions"; exit 1; }
+          set -u
+          for i in $(seq 1 30); do
+            if curl -fsS -m 3 http://100.82.34.115:11434/api/version >/dev/null 2>&1; then
+              echo "DGX reachable after ${i} attempt(s)."
+              curl -fsS http://100.82.34.115:11434/api/version
+              exit 0
+            fi
+            echo "attempt ${i}/30: DGX not yet reachable; sleeping 2s"
+            sleep 2
+          done
+          echo "::error::DGX unreachable after 60s of WireGuard waits."
+          echo "--- netbird status --detail ---"
+          sudo netbird status --detail || true
+          exit 1
 
       - uses: spriteCloud/quail@v1
         with:

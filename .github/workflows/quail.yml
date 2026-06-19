@@ -14,7 +14,9 @@ jobs:
         with: { fetch-depth: 0 }
 
       - name: Connect to Netbird
-        uses: Alemiz112/netbird-connect@b2bea07
+        # SHA-pinned (not @main) so a malicious push to this third-party
+        # action repo can't pivot into the runner.
+        uses: Alemiz112/netbird-connect@b2bea073dea42968276f717128c57e739dd514f3
         with:
           setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
           hostname: gh-quail-${{ github.run_id }}

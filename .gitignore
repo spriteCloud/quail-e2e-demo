@@ -6,3 +6,9 @@ test-results/
 .features-gen/
 .quail-runs/
 *.log
+
+# Quail emits raw HTML snapshots of crawled pages under tests/e2e/_dom/
+# for debugging the probe. They aren't referenced by any test and bloat
+# PR diffs. Ignore them (the local probe still emits them; they just
+# never get committed).
+tests/e2e/_dom/

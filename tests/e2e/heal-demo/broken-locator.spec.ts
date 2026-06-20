@@ -17,5 +17,10 @@ test('@smoke @heal-demo: spritecloud homepage shows the hero anchor', async ({ p
   // quail heal should suggest replacing the locator with an
   // anchor that does (getByRole('heading') or getByText for the
   // landing hero copy).
-  await expect(page.locator('[data-testid="quail-heal-demo-anchor"]')).toBeVisible({ timeout: 4000 })
+  // Use Playwright's getByTestId API so heal recognises it as a
+  // locator-call candidate (heal.go line 66 only acts on `getBy*` /
+  // `.locator(` calls). The suite's a11y specs already use
+  // `page.getByRole(...)` for main/heading anchors on this same
+  // page, giving heal a stable alternative to suggest.
+  await expect(page.getByTestId('quail-heal-demo-anchor')).toBeVisible({ timeout: 4000 })
 })

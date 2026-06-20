@@ -46,9 +46,28 @@ jobs:
           sudo netbird status --detail || true
           exit 1
 
+      # Run the @smoke subset of the existing suite BEFORE quail. One
+      # spec (tests/e2e/heal-demo/broken-locator.spec.ts) is
+      # deliberately broken so heal has something to fix; everything
+      # else either passes or is skipped. The resulting
+      # playwright-report.json is what the quail action's heal-mode
+      # consumes to open a follow-up "quail: heal ..." PR.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Run @smoke subset (failures expected — feeds quail heal)
+        run: npm run test:smoke -- --reporter=json --output=playwright-report.json || true
+
       - uses: spriteCloud/quail@v1
         with:
           pr: ${{ github.event.pull_request.number }}
+          # Pin to v0.96.0 — adds probe-state cache, LLM startup ping,
+          # and serve-UI step-def regen. Clients running locally see
+          # exactly the same binary.
+          version: v0.96.0
           # Probe fallback. When the PR diff yields no recognised new
           # symbols, `quail generate` still probes this URL so the
           # bot PR contains a fresh full suite. Required for this

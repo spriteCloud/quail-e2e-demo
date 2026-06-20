@@ -64,7 +64,12 @@ jobs:
           npm install --no-audit --no-fund
           npx playwright install --with-deps chromium
       - name: Run @smoke subset (failures expected — feeds quail heal)
-        run: npm run test:smoke -- --reporter=json --output=playwright-report.json || true
+        # `--reporter=json` writes to stdout by default. PLAYWRIGHT_JSON_OUTPUT_NAME
+        # redirects it to a file the quail heal step then consumes.
+        # `|| true` keeps the workflow going so the heal step actually runs.
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report.json
+        run: npx playwright test --grep @smoke --reporter=json || true
 
       - uses: spriteCloud/quail@v1
         with:

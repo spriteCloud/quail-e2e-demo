@@ -13,6 +13,30 @@ jobs:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
 
+      - name: Diagnose QUAIL_PAT delivery
+        env:
+          PAT: ${{ secrets.QUAIL_PAT }}
+        run: |
+          echo "PAT length: ${#PAT}"
+          echo "PAT prefix: ${PAT:0:4}"
+          echo "--- repo GET (read probe) ---"
+          curl -sw "\nHTTP %{http_code}\n" \
+            -H "Authorization: Bearer ${PAT}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }} \
+            -o /dev/null
+          echo "--- /git/trees POST (write probe) ---"
+          MAIN=$(curl -s -H "Authorization: Bearer ${PAT}" \
+            https://api.github.com/repos/${{ github.repository }}/git/refs/heads/main \
+            | jq -r '.object.sha')
+          echo "main=${MAIN}"
+          curl -sw "\nHTTP %{http_code}\n" \
+            -X POST \
+            -H "Authorization: Bearer ${PAT}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/git/trees" \
+            --data-binary "{\"base_tree\":\"${MAIN}\",\"tree\":[{\"path\":\"diag-runner.txt\",\"mode\":\"100644\",\"type\":\"blob\",\"content\":\"runner-pat-test\"}]}"
+
       - name: Connect to Netbird
         # SHA-pinned (not @main) so a malicious push to this third-party
         # action repo can't pivot into the runner.

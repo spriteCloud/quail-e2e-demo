@@ -32,3 +32,14 @@ Feature: Spritecloud — exercise journey
     Given I open the landing page
     And the page title contains "spriteCloud — Meeting Booking Form"
     And the main heading reads "Let's Chat"
+
+Feature: Spritecloud — exercise journey
+  As a visitor of https://www.spritecloud.com/contact
+  I want to complete the exercise flow
+  So that the page delivers on its user goal
+
+  @journey:exercise @priority:standard @smoke
+  Scenario: exercise journey reaches its terminal page
+    Given I am on the landing page
+    And the page title contains "spriteCloud — Meeting Booking Form"
+    And the main heading reads "Let's Chat"

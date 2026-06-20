@@ -81,3 +81,35 @@ test.describe('Spritecloud integration DB scaffold (skipped)', () => {
     expect(r.ok()).toBeTruthy()
   })
 })
+
+test.describe('Spritecloud: integration database scaffold (skipped)', () => {
+  test.skip('integration DB wireable round-trip: CREATE, INSERT, SELECT, DELETE', async ({ request }) => {
+    // When wired this test would:
+    //   1. Start a Testcontainers DB instance (postgres / mysql / mariadb)
+    //   2. Apply the schema declared in quail.yml
+    //   3. POST to https://www.spritecloud.com, then SELECT to confirm the row landed
+    //   4. DELETE via API or SQL, confirm SELECT returns 0
+    //   5. Tear down the container
+    const r = await request.get('/')
+    expect(r.ok()).toBeTruthy()
+  })
+
+  test.skip('integration DB wireable: transaction rolls back on error', async ({ request }) => {
+    // When wired:
+    //   1. Begin transaction
+    //   2. POST with one valid + one invalid record
+    //   3. Confirm no rows committed (full rollback)
+    //   4. Confirm DB pool returned to idle
+    const r = await request.get('/')
+    expect(r.ok()).toBeTruthy()
+  })
+
+  test.skip('integration DB wireable: concurrent requests do not exhaust the pool', async ({ request }) => {
+    // When wired:
+    //   1. Issue N concurrent reads where N > pool.max
+    //   2. Confirm all N return < 500
+    //   3. Confirm pool.metrics.waiting drops to 0 within 30s
+    const r = await request.get('/')
+    expect(r.ok()).toBeTruthy()
+  })
+})

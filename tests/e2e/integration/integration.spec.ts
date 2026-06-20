@@ -46,3 +46,19 @@ test.describe('Spritecloud — integration scaffold (skipped due to missing back
     expect(r.ok()).toBeTruthy()
   })
 })
+
+test.describe('Spritecloud integration scaffold (skipped)', () => {
+  test.skip('@kind:integration-stub — backing resource not declared', async ({ request }) => {
+    // When wired, this test would:
+    //   1. Start a Testcontainers-backed dependency (db / broker / cache)
+    //   2. Issue the probe-discovered API call against it
+    //   3. Assert round-trip integrity (write → read → assertion)
+    //   4. Tear down
+    //
+    // For now: a placeholder that records the intent so the
+    // integration layer is visible in the suite catalogue even when
+    // the consumer hasn't supplied quail.yml.
+    const r = await request.get('/')
+    expect(r.ok()).toBeTruthy()
+  })
+})

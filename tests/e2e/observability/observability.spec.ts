@@ -45,3 +45,21 @@ test.describe('Spritecloud — observability headers (https://www.spritecloud.co
     expect.soft(any, 'no observability headers found — consider emitting x-request-id or server-timing for ops').toBe(true)
   })
 })
+
+test.describe.configure({ mode: 'parallel' })
+test.describe('Spritecloud — observability headers (https://www.spritecloud.com)', () => {
+  test('origin emits at least one observability header', async ({ request }) => {
+    const response = await request.get('https://www.spritecloud.com')
+    const headers = response.headers()
+    const signals = {
+      'x-request-id': headers['x-request-id'] || '',
+      'x-correlation-id': headers['x-correlation-id'] || '',
+      'server-timing': headers['server-timing'] || '',
+      'traceparent': headers['traceparent'] || '',
+      'x-amzn-trace-id': headers['x-amzn-trace-id'] || '',
+    }
+    console.log('observability headers seen:', signals)
+    const any = Object.values(signals).some(v => v !== '')
+    expect.soft(any, 'no observability headers found — consider emitting x-request-id or server-timing for ops').toBe(true)
+  })
+})

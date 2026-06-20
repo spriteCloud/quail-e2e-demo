@@ -98,3 +98,36 @@ Feature: Spritecloud — explore journey
     When I navigate directly to "/"
     And I go back in the browser history
     Then no error message is shown in the form region
+
+Feature: Spritecloud — explore journey
+  As a visitor of https://www.spritecloud.com/
+  I want to complete the explore flow
+  So that the page delivers on its user goal
+
+  @journey:explore @priority:nice-to-have @smoke
+  Scenario: explore journey reaches its terminal page
+    Given I am on the landing page
+    And the page title contains "spriteCloud - Test your software, not your reputation!"
+    And the main heading reads "Test your software, not your reputation."
+    When I click the link to "/vciso"
+    Then I see the heading "Virtual Cyber Security Information Officer"
+    And the page title contains "spriteCloud - vCISO"
+
+  @journey:explore @priority:nice-to-have @kind:resume
+  Scenario: explore — deep-link to the terminal page renders correctly
+    Given I navigate to "/vciso"
+    Then I see the heading "Virtual Cyber Security Information Officer"
+
+  @journey:explore @priority:nice-to-have @kind:back-button
+  Scenario: explore — back button after navigation returns to landing
+    Given I am on the landing page
+    When I click the link to "/vciso"
+    When I go back in the browser history
+    Then the main heading reads "Test your software, not your reputation."
+
+  @journey:explore @priority:nice-to-have @kind:cross-journey
+  Scenario: explore — switching to landing and back leaves no broken state
+    Given I am on the landing page
+    When I navigate directly to "/"
+    And I go back in the browser history
+    Then no error message is shown in the form region

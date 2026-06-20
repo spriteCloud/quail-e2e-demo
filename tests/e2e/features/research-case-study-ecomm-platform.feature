@@ -94,3 +94,29 @@ Feature: Spritecloud — research journey
     When I click the link to "/case-study-ecomm-platform"
     When I go back in the browser history
     Then the main heading reads "Test your software, not your reputation."
+
+Feature: Spritecloud — research journey
+  As a visitor of https://www.spritecloud.com/
+  I want to complete the research flow
+  So that the page delivers on its user goal
+
+  @journey:research @priority:standard @smoke
+  Scenario: research journey reaches its terminal page
+    Given I am on the landing page
+    And the page title contains "spriteCloud - Test your software, not your reputation!"
+    And the main heading reads "Test your software, not your reputation."
+    When I click the link to "/case-study-ecomm-platform"
+    Then I see the heading "Performance Testing for an eCommerce Platform"
+    And the page title contains "Case Study - eCommerce Platform"
+
+  @journey:research @priority:standard @kind:resume
+  Scenario: research — deep-link to the terminal page renders correctly
+    Given I navigate to "/case-study-ecomm-platform"
+    Then I see the heading "Performance Testing for an eCommerce Platform"
+
+  @journey:research @priority:standard @kind:back-button
+  Scenario: research — back button after navigation returns to landing
+    Given I am on the landing page
+    When I click the link to "/case-study-ecomm-platform"
+    When I go back in the browser history
+    Then the main heading reads "Test your software, not your reputation."

@@ -158,7 +158,7 @@ jobs:
         run: |
           set -eo pipefail
           SHORT="${HEAD_SHA:0:7}"
-          BRANCH="quail-tests/tests-pr-${PR_NUM}-${SHORT}"
+          BRANCH="quail/tests-pr-${PR_NUM}-${SHORT}"
           echo "Looking for bot PR on branch $BRANCH"
           PR=$(gh pr list --head "$BRANCH" --state open --limit 1 --json number -q '.[0].number' || true)
           if [ -z "$PR" ]; then

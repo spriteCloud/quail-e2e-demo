@@ -49,6 +49,13 @@ jobs:
       - uses: spriteCloud/quail@v1
         with:
           pr: ${{ github.event.pull_request.number }}
+          # Bypass the workflow's GITHUB_TOKEN: it 403s on POST /git/trees
+          # ("Resource not accessible by integration") on this repo despite
+          # org-, repo-, and workflow-level perms all granting contents:write.
+          # The same call succeeds with the maintainer's user token, so the
+          # bot uses an admin-scoped PAT stored as QUAIL_PAT. Track the
+          # GitHub-side root cause separately; rotate QUAIL_PAT when fixed.
+          github-token: ${{ secrets.QUAIL_PAT }}
           # Pin the CLI to a specific release so this demo's bot output
           # is reproducible — clients can read the version off the
           # workflow file and run the exact same binary locally.

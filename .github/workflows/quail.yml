@@ -62,7 +62,7 @@ jobs:
       - uses: spriteCloud/quail@v1
         with:
           pr: ${{ github.event.pull_request.number }}
-          version: v0.96.2
+          version: v0.96.3
           run-generate: 'true'
           run-heal: 'false'
           target-urls: https://www.spritecloud.com
@@ -106,7 +106,7 @@ jobs:
       - uses: spriteCloud/quail@v1
         with:
           pr: ${{ github.event.pull_request.number }}
-          version: v0.96.2
+          version: v0.96.3
           run-generate: 'false'
           run-heal: 'true'
           heal-mode: 'on-failure'

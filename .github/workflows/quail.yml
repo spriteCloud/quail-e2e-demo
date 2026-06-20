@@ -47,6 +47,20 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${{ github.repository }}/git/trees" \
             --data-binary "{\"base_tree\":\"${HEAD_REF}\",\"tree\":[{\"path\":\"diag-runner-head.txt\",\"mode\":\"100644\",\"type\":\"blob\",\"content\":\"head-base\"}]}"
+          echo "--- /git/trees POST with 3MB body (write probe 3 — match quail's payload size) ---"
+          HEAD_REF=$HEAD_REF python3 - <<'PY' > /tmp/big.json
+          import os, json
+          payload = "x" * 10000
+          entries = [{"path": f"diag-big/file-{i}.txt", "mode": "100644", "type": "blob", "content": payload} for i in range(225)]
+          json.dump({"base_tree": os.environ["HEAD_REF"], "tree": entries}, open("/tmp/big.json","w"))
+          print("body bytes:", os.path.getsize("/tmp/big.json"))
+          PY
+          curl -sw "\nHTTP %{http_code}\n" \
+            -X POST \
+            -H "Authorization: Bearer ${PAT}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/git/trees" \
+            --data-binary @/tmp/big.json | tail -5
 
       - name: Connect to Netbird
         # SHA-pinned (not @main) so a malicious push to this third-party

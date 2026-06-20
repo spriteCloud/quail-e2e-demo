@@ -186,9 +186,9 @@ jobs:
         if: steps.find.outputs.skip != 'true' && success()
         env:
           GH_TOKEN: ${{ secrets.QUAIL_BOT_PAT || secrets.GITHUB_TOKEN }}
-        run: gh pr comment ${{ steps.find.outputs.pr }} --body "quail verify: generated @smoke tests pass against the bot PR branch."
+        run: 'gh pr comment ${{ steps.find.outputs.pr }} --body "quail verify - generated @smoke tests pass against the bot PR branch."'
       - name: Comment failure on bot PR
         if: steps.find.outputs.skip != 'true' && failure()
         env:
           GH_TOKEN: ${{ secrets.QUAIL_BOT_PAT || secrets.GITHUB_TOKEN }}
-        run: gh pr comment ${{ steps.find.outputs.pr }} --body "quail verify: generated @smoke tests FAILED. See [job logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})."
+        run: 'gh pr comment ${{ steps.find.outputs.pr }} --body "quail verify - generated @smoke tests FAILED. See [job logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})."'

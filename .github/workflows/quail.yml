@@ -2,9 +2,7 @@ name: quail
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-permissions:
-  contents: write
-  pull-requests: write
+permissions: write-all
 jobs:
   quail:
     runs-on: ubuntu-latest

@@ -66,3 +66,36 @@ Feature: spriteCloud — explore journey
     When I submit the form twice in rapid succession
     Then the form is not double-submitted
     Then the page title contains "Meeting Booking Form"
+
+Feature: Spritecloud — explore journey
+  As a visitor of https://www.spritecloud.com/
+  I want to complete the explore flow
+  So that the page delivers on its user goal
+
+  @journey:explore @priority:nice-to-have @smoke
+  Scenario: explore journey reaches its terminal page
+    Given I visit the homepage
+    And the page title contains "spriteCloud - Test your software, not your reputation!"
+    And the main heading reads "Test your software, not your reputation."
+    When I click the link to "/contact"
+    Then I see the heading "Let's Chat"
+    And the page title contains "spriteCloud — Meeting Booking Form"
+
+  @journey:explore @priority:nice-to-have @kind:resume
+  Scenario: explore — deep-link to the terminal page renders correctly
+    Given I visit the "/contact" page
+    Then I see the heading "Let's Chat"
+
+  @journey:explore @priority:nice-to-have @kind:back-button
+  Scenario: explore — back button after navigation returns to landing
+    Given I visit the homepage
+    When I click the link to "/contact"
+    When I go back in the browser history
+    Then the main heading reads "Test your software, not your reputation."
+
+  @journey:explore @priority:nice-to-have @kind:cross-journey
+  Scenario: explore — switching to landing and back leaves no broken state
+    Given I visit the homepage
+    When I navigate directly to "/"
+    And I go back in the browser history
+    Then no error message is shown in the form region

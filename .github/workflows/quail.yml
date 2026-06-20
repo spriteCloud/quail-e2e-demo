@@ -55,9 +55,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - name: Install demo deps + Playwright browsers
+        # No package-lock.json in the repo (the demo regenerates the
+        # package.json via the bot PR); use `npm install` instead of
+        # `npm ci`. Browsers are cached by setup-node + actions cache
+        # automatically.
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
       - name: Run @smoke subset (failures expected — feeds quail heal)
         run: npm run test:smoke -- --reporter=json --output=playwright-report.json || true
 

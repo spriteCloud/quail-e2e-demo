@@ -115,3 +115,65 @@ jobs:
           openai-api-key: ollama
           model: qwen3-coder-next:latest
           log-level: info
+
+  # verify — Run the generated tests on the bot's follow-up PR branch.
+  # The new .feature files emitted by v0.97.0 are tagged @smoke, so
+  # `--grep @smoke` covers them. Comments the result back on the bot
+  # PR and fails this job (red check on the original PR) when any
+  # generated test fails.
+  verify:
+    needs: generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      pull-requests: write
+    if: github.event.pull_request.user.login != 'quail-bot'
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Find quail bot PR for this run
+        id: find
+        env:
+          GH_TOKEN: ${{ secrets.QUAIL_BOT_PAT || secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -eo pipefail
+          SHORT="${HEAD_SHA:0:7}"
+          BRANCH="quail-tests/tests-pr-${PR_NUM}-${SHORT}"
+          echo "Looking for bot PR on branch $BRANCH"
+          PR=$(gh pr list --head "$BRANCH" --state open --limit 1 --json number -q '.[0].number' || true)
+          if [ -z "$PR" ]; then
+            echo "::notice::No quail bot PR on $BRANCH yet; nothing to verify."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "pr=$PR" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+      - name: Checkout bot PR branch
+        if: steps.find.outputs.skip != 'true'
+        run: |
+          git fetch origin "${{ steps.find.outputs.branch }}"
+          git checkout "${{ steps.find.outputs.branch }}"
+      - name: Install demo deps + Playwright browsers
+        if: steps.find.outputs.skip != 'true'
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Run generated @smoke tests
+        if: steps.find.outputs.skip != 'true'
+        id: run
+        run: npx playwright test --grep @smoke --reporter=line
+      - name: Comment success on bot PR
+        if: steps.find.outputs.skip != 'true' && success()
+        env:
+          GH_TOKEN: ${{ secrets.QUAIL_BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: gh pr comment ${{ steps.find.outputs.pr }} --body "quail verify: generated @smoke tests pass against the bot PR branch."
+      - name: Comment failure on bot PR
+        if: steps.find.outputs.skip != 'true' && failure()
+        env:
+          GH_TOKEN: ${{ secrets.QUAIL_BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: gh pr comment ${{ steps.find.outputs.pr }} --body "quail verify: generated @smoke tests FAILED. See [job logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})."

@@ -5,8 +5,37 @@ on:
 permissions:
   contents: write
   pull-requests: write
+
 jobs:
-  quail:
+  # smoke — Run the existing @smoke subset. Its job is to produce a
+  # playwright-report.json that the heal job consumes. Always runs;
+  # `|| true` keeps failures from short-circuiting the pipeline so
+  # heal can see them.
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Install demo deps + Playwright browsers
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Run @smoke subset
+        env: { PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report.json }
+        run: npx playwright test --grep @smoke --reporter=json || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report.json
+          retention-days: 7
+
+  # generate — Probe the target site + emit a fresh test suite as a
+  # follow-up "quail: tests for PR #N" PR. Strictly no heal here; the
+  # heal job below handles failures.
+  generate:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -14,50 +43,75 @@ jobs:
         with: { fetch-depth: 0 }
 
       - name: Connect to Netbird
-        # SHA-pinned (not @main) so a malicious push to this third-party
-        # action repo can't pivot into the runner.
         uses: Alemiz112/netbird-connect@b2bea073dea42968276f717128c57e739dd514f3
         with:
           setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
-          # Self-hosted Netbird management plane; defaults to api.netbird.io
-          # in the action so we MUST pass it explicitly.
           management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
-          hostname: gh-quail-${{ github.run_id }}
-
-      - name: Reach DGX through Netbird (with WireGuard handshake wait)
-        # `netbird up` returning "Connected" only means the management
-        # plane handshake finished — the actual peer-to-peer WireGuard
-        # tunnels are established lazily. Retry the DGX endpoint for up
-        # to 60s; on the way out, dump the peer state so failures are
-        # diagnosable from the log alone.
+          hostname: gh-quail-gen-${{ github.run_id }}
+      - name: Reach DGX through Netbird
         run: |
           set -u
           for i in $(seq 1 30); do
             if curl -fsS -m 3 http://100.82.34.115:11434/api/version >/dev/null 2>&1; then
-              echo "DGX reachable after ${i} attempt(s)."
-              curl -fsS http://100.82.34.115:11434/api/version
-              exit 0
+              echo "DGX reachable after ${i} attempt(s)." && exit 0
             fi
-            echo "attempt ${i}/30: DGX not yet reachable; sleeping 2s"
             sleep 2
           done
-          echo "::error::DGX unreachable after 60s of WireGuard waits."
-          echo "--- netbird status --detail ---"
-          sudo netbird status --detail || true
-          exit 1
+          echo "::error::DGX unreachable after 60s." && exit 1
 
       - uses: spriteCloud/quail@v1
         with:
           pr: ${{ github.event.pull_request.number }}
-          # Probe fallback. When the PR diff yields no recognised new
-          # symbols, `quail generate` still probes this URL so the
-          # bot PR contains a fresh full suite. Required for this
-          # demo since Subscribe.ts is a class export that the TS
-          # AST extractor doesn't flag as a journey-bearing symbol.
+          version: v0.96.2
+          run-generate: 'true'
+          run-heal: 'false'
           target-urls: https://www.spritecloud.com
           openai-base-url: http://100.82.34.115:11434/v1
           openai-api-key: ollama
           model: qwen3-coder-next:latest
-          heal-mode: on-failure
+          log-level: info
+
+  # heal — Read smoke's report. If failures exist, open a "quail: heal
+  # locators for PR #N" PR with better-anchored replacements. No probe,
+  # no generate; this job is single-purpose.
+  heal:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Connect to Netbird
+        uses: Alemiz112/netbird-connect@b2bea073dea42968276f717128c57e739dd514f3
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
+          hostname: gh-quail-heal-${{ github.run_id }}
+      - name: Reach DGX through Netbird
+        run: |
+          set -u
+          for i in $(seq 1 30); do
+            if curl -fsS -m 3 http://100.82.34.115:11434/api/version >/dev/null 2>&1; then
+              echo "DGX reachable after ${i} attempt(s)." && exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::DGX unreachable after 60s." && exit 1
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: playwright-report
+          path: .
+      - uses: spriteCloud/quail@v1
+        with:
+          pr: ${{ github.event.pull_request.number }}
+          version: v0.96.2
+          run-generate: 'false'
+          run-heal: 'true'
+          heal-mode: 'on-failure'
           playwright-report: playwright-report.json
+          openai-base-url: http://100.82.34.115:11434/v1
+          openai-api-key: ollama
+          model: qwen3-coder-next:latest
           log-level: info

@@ -12,20 +12,21 @@ export interface FAQProps {
   items: FAQItem[]
 }
 
-export class FAQ {
-  constructor(public props: FAQProps) {}
+/**
+ * openFAQ returns the visible (open) item for an accordion at the given
+ * index. Returns null when the accordion is fully collapsed. Exported
+ * as a top-level function so the quail PR-diff extractor reliably
+ * flags it as a journey-bearing symbol.
+ */
+export function openFAQ(props: FAQProps, openIdx: number): FAQItem | null {
+  if (openIdx < 0 || openIdx >= props.items.length) return null
+  return props.items[openIdx]
+}
 
-  /**
-   * Return the visible (open) items so the test harness can assert
-   * which question is currently expanded. Returns an empty array
-   * when the accordion is fully collapsed.
-   */
-  visibleItems(openIdx: number): FAQItem[] {
-    if (openIdx < 0 || openIdx >= this.props.items.length) return []
-    return [this.props.items[openIdx]]
-  }
-
-  describe(): string {
-    return `FAQ (${this.props.topic}) → ${this.props.items.length} items`
-  }
+/**
+ * describeFAQ summarises an FAQ accordion in one line. Useful for the
+ * sentry dashboard / SR live-region announcements.
+ */
+export function describeFAQ(props: FAQProps): string {
+  return `FAQ (${props.topic}) → ${props.items.length} items`
 }

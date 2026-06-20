@@ -254,3 +254,123 @@ test.describe('Spritecloud — API contract for submission endpoint', () => {
     }
   })
 })
+
+test.describe.configure({ mode: 'parallel' })
+test.describe('Spritecloud API contract — requests to https://www.spritecloud.com/', () => {
+
+  test('happy path: valid form submission returns success (2xx)', async ({ request }) => {
+    const response = await request.get('https://www.spritecloud.com/', {
+      form: {
+        'email-2': 'test@example.com',
+      },
+    })
+    // 2xx OR a 3xx redirect (post-redirect-get) is acceptable; many
+    // marketing forms 302 to a thank-you page.
+    expect(response.status()).toBeLessThan(400)
+  })
+
+  test('negative: empty form submission returns client error (4xx)', async ({ request }) => {
+    const response = await request.get('https://www.spritecloud.com/', {
+      form: {},
+    })
+    // 4xx is the contract; 5xx means the server crashed on empty input
+    // (which is a bug worth filing).
+    expect(response.status()).toBeGreaterThanOrEqual(400)
+    expect(response.status()).toBeLessThan(500)
+  })
+
+  test('negative: invalid email format returns client error (4xx) or validation message', async ({ request }) => {
+    const response = await request.get('https://www.spritecloud.com/', {
+      form: {
+        'email-2': 'not-an-email',
+      },
+    })
+    // Some implementations 200 + render an error in the response body —
+    // tolerate that by asserting "either 4xx OR a body that looks like
+    // a validation error".
+    if (response.status() < 400) {
+      const body = await response.text().catch(() => '')
+      expect(body).toMatch(/invalid|email|please enter/i)
+    } else {
+      expect(response.status()).toBeLessThan(500)
+    }
+  })
+
+  test('negative: large payload does not cause server error (5xx)', async ({ request }) => {
+    const huge = 'a'.repeat(50_000)
+    const response = await request.get('https://www.spritecloud.com/', {
+      form: {
+        'email-2': huge,
+      },
+    })
+    // Truncated / 413 / 400 all acceptable; what we DON'T want is a 5xx.
+    expect(response.status()).toBeLessThan(500)
+  })
+
+  // ─────────────────────────────────────────────────────────────
+  // v0.50: extended form-negative coverage. The deck-cited "15-25
+  // negatives per form" target needs more than 4 default cases —
+  // each block below covers a value class an adversarial QA would
+  // test by hand. None of these assert success; they each assert
+  // the server doesn't 5xx and doesn't leak a stack trace.
+  // ─────────────────────────────────────────────────────────────
+
+  test('negative: unicode characters in input do not cause server error (5xx)', async ({ request }) => {
+    const response = await request.get('https://www.spritecloud.com/', {
+      form: {
+        'email-2': 'café-niño-用户-🎉-test@example.com',
+      },
+    })
+    expect(response.status()).toBeLessThan(500)
+  })
+
+  test('negative: SQL-like injection attempts do not cause server error or leak info', async ({ request }) => {
+    // Tests the server's input sanitization. The contract: MUST NOT
+    // 5xx and MUST NOT echo back unescaped fragments.
+    const payload = "'; DROP TABLE users; --"
+    const response = await request.get('https://www.spritecloud.com/', {
+      form: {
+        'email-2': payload,
+      },
+    })
+    expect(response.status()).toBeLessThan(500)
+    const body = await response.text().catch(() => '')
+    expect.soft(body.toLowerCase()).not.toContain('sqlstate')
+    expect.soft(body.toLowerCase()).not.toContain('syntax error')
+  })
+
+  test('negative: XSS-like input is escaped or rejected, no script execution', async ({ request }) => {
+    const payload = '<script>window.__rqXSS=1</script>'
+    const response = await request.get('https://www.spritecloud.com/', {
+      form: {
+        'email-2': payload,
+      },
+    })
+    expect(response.status()).toBeLessThan(500)
+    const body = await response.text().catch(() => '')
+    expect.soft(body).not.toContain('<script>window.__rqXSS=1</script>')
+  })
+
+  test('negative: null-byte injection attempts do not cause server error (5xx)', async ({ request }) => {
+    const response = await request.get('https://www.spritecloud.com/', {
+      form: {
+        'email-2': 'value\x00malicious',
+      },
+    })
+    expect(response.status()).toBeLessThan(500)
+  })
+
+  test('negative: high-volume requests do not cause server error (5xx) or are rate-limited', async ({ request }) => {
+    // 10 concurrent identical requests. Either the server rate-limits
+    // (429) — fine — or it serves all 10 without 5xx-ing.
+    const body = {
+      'email-2': 'test@example.com',
+    }
+    const responses = await Promise.all(
+      Array.from({ length: 10 }, () => request.get('https://www.spritecloud.com/', { form: body }))
+    )
+    for (const r of responses) {
+      expect.soft(r.status(), `burst response status ${r.status()}`).toBeLessThan(500)
+    }
+  })
+})

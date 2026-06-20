@@ -75,3 +75,33 @@ test.describe('Spritecloud — integration cache (scaffold, skipped)', () => {
     expect(r.ok()).toBeTruthy()
   })
 })
+
+test.describe('Spritecloud — integration cache (skipped)', () => {
+  test.skip('integration cache: round-trip set/get persisted and reads back', async ({ request }) => {
+    // When wired:
+    //   1. SET key=k val=v in cache
+    //   2. Probe an endpoint that reads the cache
+    //   3. Confirm the response includes the value
+    //   4. Confirm X-Cache: HIT header
+    const r = await request.get('/')
+    expect(r.ok()).toBeTruthy()
+  })
+
+  test.skip('integration cache: entry expires within its TTL', async ({ request }) => {
+    // When wired:
+    //   1. SET with TTL=2s
+    //   2. Wait 3s
+    //   3. GET → expect MISS / null
+    const r = await request.get('/')
+    expect(r.ok()).toBeTruthy()
+  })
+
+  test.skip('integration cache: write-through invalidates cached read', async ({ request }) => {
+    // When wired:
+    //   1. Read endpoint A (warms cache)
+    //   2. POST to endpoint that mutates the cached state
+    //   3. Re-read A; confirm new value (not stale)
+    const r = await request.get('/')
+    expect(r.ok()).toBeTruthy()
+  })
+})

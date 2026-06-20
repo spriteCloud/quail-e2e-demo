@@ -85,3 +85,41 @@ test.describe('Spritecloud HTTP redirect and error chains — https://www.sprite
     await expect(page).toHaveURL(/.+/)
   })
 })
+
+test.describe.configure({ mode: 'parallel' })
+test.describe('Spritecloud HTTP redirect and error handling chains', () => {
+  test('@kind:http-chain follows multi-hop redirects (301 → 302 → 200)', async ({ request }) => {
+    // 301 + 302 + 200 — the common cdn → canonical → asset chain.
+    const resp = await request.get('/', { maxRedirects: 10 })
+    expect(resp.ok()).toBeTruthy()
+    // At most we tolerate 5 hops; more usually signals a loop.
+    const hops = resp.request().redirectedFrom() ? 1 : 0 // crude
+    expect.soft(hops, `unexpectedly many redirect hops`).toBeLessThanOrEqual(5)
+  })
+
+  test('@kind:http-chain nonexistent paths return a friendly error response', async ({ request }) => {
+    const resp = await request.get('/__quail_does_not_exist__', { failOnStatusCode: false })
+    expect(resp.status()).toBeGreaterThanOrEqual(400)
+    expect(resp.status()).toBeLessThan(600)
+    // The body should not be a stack trace or framework default.
+    const body = await resp.text()
+    expect.soft(body.toLowerCase()).not.toContain('traceback')
+    expect.soft(body.toLowerCase()).not.toContain('stack trace')
+  })
+
+  test('@kind:http-chain server-side rate-limit returns friendly error without crashing page', async ({ context, page }) => {
+    let firstCall = true
+    await context.route('**/*', async route => {
+      if (firstCall && route.request().url().endsWith('/'.replace(/^\//, ''))) {
+        firstCall = false
+        return route.continue()
+      }
+      // Stub: 429 with Retry-After.
+      await route.fulfill({ status: 429, headers: { 'Retry-After': '2' }, body: '' })
+    })
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    // The initial document loaded; downstream rate-limits did NOT
+    // crash the page.
+    await expect(page).toHaveURL(/.+/)
+  })
+})

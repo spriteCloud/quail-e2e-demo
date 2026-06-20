@@ -49,3 +49,21 @@ test.describe('Spritecloud — security headers on www.spritecloud.com', () => {
     expect.soft(headers['referrer-policy'], 'Referrer-Policy header is missing').toBeTruthy()
   })
 })
+
+test.describe.configure({ mode: 'parallel' })
+test.describe('Spritecloud — security headers (https://www.spritecloud.com)', () => {
+  test('Baseline security headers are present (smoke)', async ({ request }) => {
+    const response = await request.get('https://www.spritecloud.com')
+    expect(response.status(), 'Origin should respond').toBeLessThan(500)
+    const headers = response.headers()
+
+    expect.soft(headers['strict-transport-security'], 'HSTS header missing').toBeTruthy()
+    const csp = headers['content-security-policy'] || ''
+    expect.soft(csp, 'Content-Security-Policy header missing').toBeTruthy()
+    const xfo = headers['x-frame-options']
+    const cspFrameAncestors = /frame-ancestors/i.test(csp)
+    expect.soft(xfo || cspFrameAncestors, 'Missing clickjacking protection (X-Frame-Options or CSP frame-ancestors)').toBeTruthy()
+    expect.soft(headers['x-content-type-options'], 'X-Content-Type-Options header missing').toBe('nosniff')
+    expect.soft(headers['referrer-policy'], 'Referrer-Policy header missing').toBeTruthy()
+  })
+})

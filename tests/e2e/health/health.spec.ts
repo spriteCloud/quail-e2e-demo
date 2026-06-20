@@ -65,3 +65,31 @@ test.describe('Spritecloud health probe smoke test', () => {
     expect(allErrored, 'all health probes errored — origin unreachable?').toBe(false)
   })
 })
+
+const HEALTH_PATHS = ['/health', '/healthz', '/ready', '/readyz', '/status', '/livez']
+
+test.describe.configure({ mode: 'parallel' })
+test.describe('Spritecloud — health probe smoke test at https://www.spritecloud.com', () => {
+  test('at least one well-known health endpoint returns a 2xx status', async ({ request }) => {
+    const results: Array<{ path: string; status: number }> = []
+    for (const path of HEALTH_PATHS) {
+      try {
+        const url = new URL(path, 'https://www.spritecloud.com').toString()
+        const r = await request.get(url, { timeout: 5_000, maxRedirects: 0 })
+        results.push({ path, status: r.status() })
+      } catch (e) {
+        results.push({ path, status: -1 })
+      }
+    }
+    console.log('health probe results:', results)
+    const anyHealthy = results.some(r => r.status >= 200 && r.status < 300)
+    if (!anyHealthy) {
+      console.log('no well-known health endpoint responded 2xx — consider exposing /health or /healthz')
+    }
+    expect.soft(anyHealthy, 'no health endpoint responded 2xx').toBe(true)
+    // Hard fail only when EVERY probe errored (network down) — a 404 is
+    // a perfectly valid response.
+    const allErrored = results.every(r => r.status === -1)
+    expect(allErrored, 'all health probes errored — origin unreachable?').toBe(false)
+  })
+})

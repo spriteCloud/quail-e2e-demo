@@ -108,7 +108,7 @@ jobs:
           # Pin the CLI to a specific release so this demo's bot output
           # is reproducible — clients can read the version off the
           # workflow file and run the exact same binary locally.
-          version: v0.95.8
+          version: v0.95.9
           # Probe fallback. When the PR diff yields no recognised new
           # symbols, `quail generate` still probes this URL so the
           # bot PR contains a fresh full suite. Required for this

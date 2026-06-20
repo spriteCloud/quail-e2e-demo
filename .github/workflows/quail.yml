@@ -7,21 +7,34 @@ permissions:
   pull-requests: write
 
 jobs:
-  # smoke — Run the existing @smoke subset. Its job is to produce a
-  # playwright-report.json that the heal job consumes. Always runs;
-  # `|| true` keeps failures from short-circuiting the pipeline so
-  # heal can see them.
+  # smoke — Run the @smoke subset, capture the JSON report, then gate
+  # via `quail ledger verify`. The Playwright step still tolerates
+  # failures (its job is to harvest the report) but the verify step
+  # is the real pass/fail: it exits non-zero ONLY when the report
+  # contains a failure NOT tracked as open in tests/e2e/docs/findings.md.
+  # Known SUT debt stays in the ledger; regressions surface red.
+  # Heal consumes the same artifact regardless.
   smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
       - name: Install demo deps + Playwright browsers
         run: |
           npm install --no-audit --no-fund
           npx playwright install --with-deps chromium
+      - name: Install quail (for ledger verify)
+        run: |
+          set -euo pipefail
+          ver=v0.98.0
+          tmp=$(mktemp -d)
+          curl -fsSL "https://github.com/spriteCloud/quail/releases/download/${ver}/quail_linux_amd64.tar.gz" -o "$tmp/q.tar.gz"
+          tar -xzf "$tmp/q.tar.gz" -C "$tmp"
+          sudo mv "$tmp/quail" /usr/local/bin/quail
+          quail --version
       - name: Run @smoke subset
         env: { PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report.json }
         run: npx playwright test --grep @smoke --reporter=json || true
@@ -31,6 +44,8 @@ jobs:
           name: playwright-report
           path: playwright-report.json
           retention-days: 7
+      - name: Verify smoke against findings.md baseline
+        run: quail ledger verify --report=playwright-report.json --baseline=tests/e2e/docs/findings.md
 
   # generate — Probe the target site + emit a fresh test suite as a
   # follow-up "quail: tests for PR #N" PR. Strictly no heal here; the
@@ -62,7 +77,7 @@ jobs:
       - uses: spriteCloud/quail@v1
         with:
           pr: ${{ github.event.pull_request.number }}
-          version: v0.97.1
+          version: v0.98.0
           run-generate: 'true'
           run-heal: 'false'
           target-urls: https://www.spritecloud.com
@@ -106,7 +121,7 @@ jobs:
       - uses: spriteCloud/quail@v1
         with:
           pr: ${{ github.event.pull_request.number }}
-          version: v0.97.1
+          version: v0.98.0
           run-generate: 'false'
           run-heal: 'true'
           heal-mode: 'on-failure'

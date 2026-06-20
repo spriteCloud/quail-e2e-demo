@@ -25,7 +25,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/${{ github.repository }} \
             -o /dev/null
-          echo "--- /git/trees POST (write probe) ---"
+          echo "--- /git/trees POST against MAIN (write probe 1) ---"
           MAIN=$(curl -s -H "Authorization: Bearer ${PAT}" \
             https://api.github.com/repos/${{ github.repository }}/git/refs/heads/main \
             | jq -r '.object.sha')
@@ -35,7 +35,18 @@ jobs:
             -H "Authorization: Bearer ${PAT}" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${{ github.repository }}/git/trees" \
-            --data-binary "{\"base_tree\":\"${MAIN}\",\"tree\":[{\"path\":\"diag-runner.txt\",\"mode\":\"100644\",\"type\":\"blob\",\"content\":\"runner-pat-test\"}]}"
+            --data-binary "{\"base_tree\":\"${MAIN}\",\"tree\":[{\"path\":\"diag-runner-main.txt\",\"mode\":\"100644\",\"type\":\"blob\",\"content\":\"main-base\"}]}"
+          echo "--- /git/trees POST against PR HEAD (write probe 2 — mirrors quail) ---"
+          HEAD_REF=$(curl -s -H "Authorization: Bearer ${PAT}" \
+            "https://api.github.com/repos/${{ github.repository }}/git/refs/heads/${{ github.head_ref }}" \
+            | jq -r '.object.sha')
+          echo "head_ref=${{ github.head_ref }} head_sha=${HEAD_REF}"
+          curl -sw "\nHTTP %{http_code}\n" \
+            -X POST \
+            -H "Authorization: Bearer ${PAT}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/git/trees" \
+            --data-binary "{\"base_tree\":\"${HEAD_REF}\",\"tree\":[{\"path\":\"diag-runner-head.txt\",\"mode\":\"100644\",\"type\":\"blob\",\"content\":\"head-base\"}]}"
 
       - name: Connect to Netbird
         # SHA-pinned (not @main) so a malicious push to this third-party

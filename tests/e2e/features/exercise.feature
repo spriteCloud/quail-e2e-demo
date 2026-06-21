@@ -21,3 +21,14 @@ Feature: spriteCloud — exercise journey
     Given I open the landing page
     And the page title contains "spriteCloud - Test your software, not your reputation!"
     And the main heading reads "Test your software, not your reputation."
+
+Feature: Spritecloud — exercise journey
+  As a visitor of https://www.spritecloud.com/
+  I want to complete the exercise flow
+  So that the page delivers on its user goal
+
+  @journey:exercise @priority:standard @smoke
+  Scenario: exercise journey reaches its terminal page
+    Given I open the landing page
+    And the page title contains "spriteCloud - Test your software, not your reputation!"
+    And the main heading reads "Test your software, not your reputation."

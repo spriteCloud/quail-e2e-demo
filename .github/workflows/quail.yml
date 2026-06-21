@@ -75,6 +75,8 @@ jobs:
           echo "::error::DGX unreachable after 60s." && exit 1
 
       - uses: spriteCloud/quail@v1
+        env:
+          QUAIL_KINDS: journey
         with:
           pr: ${{ github.event.pull_request.number }}
           version: v0.99.0

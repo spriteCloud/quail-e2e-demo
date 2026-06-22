@@ -29,7 +29,7 @@ jobs:
       - name: Install quail (for ledger verify)
         run: |
           set -euo pipefail
-          ver=v0.99.0
+          ver=v0.99.1
           tmp=$(mktemp -d)
           curl -fsSL "https://github.com/spriteCloud/quail/releases/download/${ver}/quail_linux_amd64.tar.gz" -o "$tmp/q.tar.gz"
           tar -xzf "$tmp/q.tar.gz" -C "$tmp"
@@ -79,7 +79,7 @@ jobs:
           QUAIL_KINDS: journey
         with:
           pr: ${{ github.event.pull_request.number }}
-          version: v0.99.0
+          version: v0.99.1
           run-generate: 'true'
           run-heal: 'false'
           target-urls: https://www.spritecloud.com
@@ -123,7 +123,7 @@ jobs:
       - uses: spriteCloud/quail@v1
         with:
           pr: ${{ github.event.pull_request.number }}
-          version: v0.99.0
+          version: v0.99.1
           run-generate: 'false'
           run-heal: 'true'
           heal-mode: 'on-failure'

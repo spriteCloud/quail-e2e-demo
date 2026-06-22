@@ -29,11 +29,13 @@ jobs:
       - name: Install quail (for ledger verify)
         run: |
           set -euo pipefail
-          ver=v0.99.1
+          ver=v1.0.0
           tmp=$(mktemp -d)
-          curl -fsSL "https://github.com/spriteCloud/quail/releases/download/${ver}/quail_linux_amd64.tar.gz" -o "$tmp/q.tar.gz"
+          curl -fsSL "https://github.com/spriteCloud/quail-review/releases/download/${ver}/quail-review_linux_amd64.tar.gz" -o "$tmp/q.tar.gz"
           tar -xzf "$tmp/q.tar.gz" -C "$tmp"
-          sudo mv "$tmp/quail" /usr/local/bin/quail
+          sudo mv "$tmp/quail-review" /usr/local/bin/quail-review
+          # v1.0.0 — keep `run: quail …` shorthand alive via symlink.
+          sudo ln -sf /usr/local/bin/quail-review /usr/local/bin/quail
           quail --version
       - name: Run @smoke subset
         env: { PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report.json }
@@ -74,12 +76,12 @@ jobs:
           done
           echo "::error::DGX unreachable after 60s." && exit 1
 
-      - uses: spriteCloud/quail@v1
+      - uses: spriteCloud/quail-review@v1
         env:
           QUAIL_KINDS: journey
         with:
           pr: ${{ github.event.pull_request.number }}
-          version: v0.99.1
+          version: v1.0.0
           run-generate: 'true'
           run-heal: 'false'
           target-urls: https://www.spritecloud.com
@@ -120,10 +122,10 @@ jobs:
         with:
           name: playwright-report
           path: .
-      - uses: spriteCloud/quail@v1
+      - uses: spriteCloud/quail-review@v1
         with:
           pr: ${{ github.event.pull_request.number }}
-          version: v0.99.1
+          version: v1.0.0
           run-generate: 'false'
           run-heal: 'true'
           heal-mode: 'on-failure'

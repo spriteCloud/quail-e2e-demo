@@ -53,4 +53,8 @@ jobs:
           openai-base-url: http://100.82.34.115:11434/v1
           openai-api-key: ollama
           model: qwen3-coder-next:latest
+          # Big diffs against a self-hosted LLM need more than the
+          # default 60s. Self-hosted qwen chews through ~130k tokens of
+          # truncated diff in a few minutes.
+          llm-timeout: 300s
           log-level: info

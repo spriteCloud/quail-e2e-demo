@@ -1,9 +1,14 @@
 name: quail-review
 
-# Fires when someone comments `@quail` on a PR. quail-review fetches
+# Fires when someone comments `/quail` on a PR. quail-review fetches
 # the PR's unified diff, asks the LLM for a `## Core Changes` +
 # `## Verdict` summary, and posts the result as a single markdown
 # comment on the PR.
+#
+# `/quail` (slash prefix) — not `@quail` — because `@quail` autolinks
+# to an actual GitHub user account and posting it pings a real person.
+# The slash form is the standard GitHub-bot trigger convention (see
+# also `/lgtm`, `/hold`, `/rebase`).
 
 on:
   issue_comment:
@@ -16,7 +21,7 @@ permissions:
 
 jobs:
   review:
-    if: github.event.issue.pull_request != null && contains(github.event.comment.body, '@quail')
+    if: github.event.issue.pull_request != null && contains(github.event.comment.body, '/quail')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

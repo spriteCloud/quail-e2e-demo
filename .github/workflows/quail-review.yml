@@ -47,7 +47,7 @@ jobs:
 
       - uses: spriteCloud/quail-review@v1
         with:
-          version: v1.0.18
+          version: v1.0.19
           mode: review
           pr: ${{ github.event.issue.number }}
           openai-base-url: http://100.82.34.115:11434/v1

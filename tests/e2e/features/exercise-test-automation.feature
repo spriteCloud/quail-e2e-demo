@@ -32,3 +32,21 @@ Feature: spriteCloud — exercise journey
     Given I am on the landing page
     When I submit the form without filling any required field
     Then no success message is shown
+
+Feature: Spritecloud — exercise journey
+  As a visitor of https://www.spritecloud.com/test-automation
+  I want to complete the exercise flow
+  So that the page delivers on its user goal
+
+  @journey:exercise @priority:standard @smoke
+  Scenario: exercise journey reaches its terminal page
+    Given I open the landing page
+    And the page title contains "Test Automation — spriteCloud"
+    And the main heading reads "Test More.
+Spend less.
+Ship faster."
+
+  @journey:exercise @priority:standard @kind:empty-state
+  Scenario: exercise — page renders the landing list
+    Given I open the landing page
+    Then the page has at least 1 items

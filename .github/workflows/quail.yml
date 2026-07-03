@@ -95,6 +95,14 @@ jobs:
   # no generate; this job is single-purpose.
   heal:
     needs: smoke
+    # Heal should run whether or not `Verify smoke against findings.md`
+    # passed — the ledger-verify gate is a human-facing UX check for
+    # regressions, but heal's job is to propose locator fixes from the
+    # Playwright JSON report regardless of ledger drift. Without this,
+    # any untracked regression on the branch (e.g. a stale snapshot)
+    # skips heal entirely, which is exactly the situation heal exists
+    # to help with.
+    if: ${{ !cancelled() && needs.smoke.result != 'skipped' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

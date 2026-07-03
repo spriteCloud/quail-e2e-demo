@@ -94,4 +94,4 @@ standard → medium, nice-to-have → low.
 | `tests/e2e/visual/test-automation.visual-states.spec.ts` | @kind:visual-state @smoke primary CTA across states | TimeoutError: page.goto: Timeout 20000ms exceeded. | 2026-06-20 | 2026-06-20 | medium | open |
 | `tests/e2e/visual/test-automation.visual.spec.ts` | @kind:visual @smoke page matches baseline (mobile) | TimeoutError: page.goto: Timeout 20000ms exceeded. | 2026-06-20 | 2026-06-20 | medium | open |
 | `tests/e2e/visual/test-automation.visual.spec.ts` | @kind:visual @smoke page matches baseline (tablet) | TimeoutError: page.goto: Timeout 20000ms exceeded. | 2026-06-20 | 2026-06-20 | medium | open |
-| `tests/e2e/heal-demo/broken-locator.spec.ts` | @smoke @heal-demo: spritecloud homepage shows the hero anchor | Error: expect(locator).toBeVisible: locator resolved to 0 elements | 2026-07-03 | 2026-07-03 | low | open |
+| `tests/e2e/heal-demo/broken-locator.heal-demo.spec.ts` | @smoke @heal-demo: spritecloud homepage shows the hero anchor | Error: expect(locator).toBeVisible: locator resolved to 0 elements | 2026-07-03 | 2026-07-03 | low | open |

@@ -29,7 +29,7 @@ jobs:
       - name: Install quail (for ledger verify)
         run: |
           set -euo pipefail
-          ver=v1.4.0
+          ver=v1.4.1
           tmp=$(mktemp -d)
           curl -fsSL "https://github.com/spriteCloud/quail-review/releases/download/${ver}/quail-review_linux_amd64.tar.gz" -o "$tmp/q.tar.gz"
           tar -xzf "$tmp/q.tar.gz" -C "$tmp"
@@ -76,7 +76,7 @@ jobs:
           done
           echo "::error::DGX unreachable after 60s." && exit 1
 
-      # v1.4.0+ default is journey-only; a11y/visual/perf/etc. are
+      # v1.4.1+ default is journey-only; a11y/visual/perf/etc. are
       # opt-in via QUAIL_KINDS. QUAIL_EMIT=both surfaces the .feature
       # + _steps.ts sibling of every journey so CI proves the
       # Gherkin round-trip.
@@ -85,7 +85,7 @@ jobs:
           QUAIL_EMIT: both
         with:
           pr: ${{ github.event.pull_request.number }}
-          version: v1.4.0
+          version: v1.4.1
           run-generate: 'true'
           run-heal: 'false'
           target-urls: https://www.spritecloud.com
@@ -137,7 +137,7 @@ jobs:
       - uses: spriteCloud/quail-review@v1
         with:
           pr: ${{ github.event.pull_request.number }}
-          version: v1.4.0
+          version: v1.4.1
           run-generate: 'false'
           run-heal: 'true'
           heal-mode: 'on-failure'

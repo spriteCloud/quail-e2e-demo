@@ -37,8 +37,8 @@ async function endpointExists(request: any): Promise<boolean> {
 }
 
 test.describe.configure({ mode: 'parallel' })
-test.describe('spriteCloud — GraphQL discovery test for https://www.spritecloud.com', () => {
-  test('@kind:graphql-stub @smoke introspection succeeds if endpoint exists, otherwise skips', async ({ request }) => {
+test.describe('Spritecloud — GraphQL discovery @ https://www.spritecloud.com', () => {
+  test('@kind:graphql-stub @smoke introspection succeeds OR endpoint is absent', async ({ request }) => {
     const r = await request.post(ENDPOINT, {
       data: INTROSPECTION,
       headers: { 'content-type': 'application/json' },
@@ -59,7 +59,7 @@ test.describe('spriteCloud — GraphQL discovery test for https://www.spriteclou
   // is absent so the stub doesn't fail on sites without GraphQL.
   // ─────────────────────────────────────────────────────────────
 
-  test('@kind:graphql-stub @negative empty query returns 4xx instead of 5xx', async ({ request }) => {
+  test('@kind:graphql-stub @negative empty-query returns 4xx not 5xx', async ({ request }) => {
     if (!(await endpointExists(request))) { test.skip(); return }
     const r = await request.post(ENDPOINT, {
       data: { query: '' },
@@ -70,7 +70,7 @@ test.describe('spriteCloud — GraphQL discovery test for https://www.spriteclou
     expect.soft(r.status(), `empty query → ${r.status()}`).toBeGreaterThanOrEqual(400)
   })
 
-  test('@kind:graphql-stub @negative malformed query returns 4xx instead of 5xx', async ({ request }) => {
+  test('@kind:graphql-stub @negative malformed-query returns 4xx not 5xx', async ({ request }) => {
     if (!(await endpointExists(request))) { test.skip(); return }
     const r = await request.post(ENDPOINT, {
       data: { query: '{ __schema { types { name' }, // unbalanced braces
@@ -80,7 +80,7 @@ test.describe('spriteCloud — GraphQL discovery test for https://www.spriteclou
     expect(r.status()).toBeLessThan(500)
   })
 
-  test('@kind:graphql-stub @negative type mismatch in variables does not cause a 5xx error', async ({ request }) => {
+  test('@kind:graphql-stub @negative type-mismatch in variables does not 5xx', async ({ request }) => {
     if (!(await endpointExists(request))) { test.skip(); return }
     const r = await request.post(ENDPOINT, {
       data: {
@@ -93,7 +93,7 @@ test.describe('spriteCloud — GraphQL discovery test for https://www.spriteclou
     expect(r.status()).toBeLessThan(500)
   })
 
-  test('@kind:graphql-stub @negative deep nested query is limited (depth-limit DoS protection)', async ({ request }) => {
+  test('@kind:graphql-stub @negative deep-nested-query is bounded (depth-limit DoS protection)', async ({ request }) => {
     if (!(await endpointExists(request))) { test.skip(); return }
     // 12 levels deep. A server with no depth limit might cooperate
     // and serve it; one with a configured limit should 4xx; either
@@ -109,7 +109,7 @@ test.describe('spriteCloud — GraphQL discovery test for https://www.spriteclou
     expect(r.status()).toBeLessThan(500)
   })
 
-  test('@kind:graphql-stub @negative bare GET on /graphql responds appropriately by HTTP method', async ({ request }) => {
+  test('@kind:graphql-stub @negative bare GET on /graphql is method-disciplined', async ({ request }) => {
     if (!(await endpointExists(request))) { test.skip(); return }
     // Many GraphQL servers accept GET for queries via ?query=, but
     // a bare GET with no query should 4xx (400 or 405).

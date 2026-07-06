@@ -16,8 +16,8 @@
  */
 import { test, expect } from '@playwright/test'
 
-test.describe('spriteCloud — integration stub (skipped until backing resource wired)', () => {
-  test.skip('integration stub: backing resource not declared', async ({ request }) => {
+test.describe('Spritecloud — integration scaffold (skipped)', () => {
+  test.skip('@kind:integration-stub @wireable backing resource not declared', async ({ request }) => {
     // When wired, this test would:
     //   1. Start a Testcontainers-backed dependency (db / broker / cache)
     //   2. Issue the probe-discovered API call against it

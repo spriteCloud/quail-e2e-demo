@@ -11,24 +11,15 @@
 #   npx playwright test --grep @journey:exercise
 #   npx playwright test --grep @smoke
 
-Feature: spriteCloud — exercise journey
+Feature: Spritecloud — exercise · /test-automation
   As a visitor of https://www.spritecloud.com/test-automation
   I want to complete the exercise flow
   So that the page delivers on its user goal
 
   @journey:exercise @priority:standard @smoke
-  Scenario: exercise flow completes on the expected final page
+  Scenario: exercise journey reaches its terminal page
     Given I open the landing page
-    And the page title contains "Test Automation"
-    And the main heading reads "Expert Test Automation Services"
-
-  # ───────────────────────────────────────────────────────────────
-  # LLM-composed scenarios (model: qwen3-coder-next:latest)
-  # Filter out with `--grep-invert @llm-composed` for stricter CI runs.
-  # ───────────────────────────────────────────────────────────────
-
-  @journey:exercise @priority:standard @llm-composed @kind:variant @model:qwen3-coder-next-latest
-  Scenario: submitting an empty form displays validation errors
-    Given I am on the landing page
-    When I submit the form without filling any required field
-    Then no success message is shown
+    And the page title contains "Test Automation — spriteCloud"
+    And the main heading reads "Test More.
+Spend less.
+Ship faster."

@@ -16,9 +16,9 @@
 import { test, expect } from '@playwright/test'
 
 test.describe.configure({ mode: 'parallel' })
-test.describe('spriteCloud — keyboard navigation @ https://www.spritecloud.com/functional-testing', () => {
-  test('keyboard navigation: Tab cycles through the first 10 focusables', async ({ page }) => {
-    await page.goto('/functional-testing')
+test.describe('Spritecloud — keyboard navigation @ https://www.spritecloud.com/functional-testing', () => {
+  test('@kind:keyboard @smoke tab through the first 10 focusables', async ({ page }) => {
+    await page.goto('/functional-testing', { waitUntil: 'domcontentloaded' })
 
     const focusables = await page.locator('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])').all()
     const max = Math.min(focusables.length, 10)
@@ -32,11 +32,11 @@ test.describe('spriteCloud — keyboard navigation @ https://www.spritecloud.com
       }
     }
 
-    expect.soft(reached, `Tab reached only ${reached} of ${max} focusables`).toBeGreaterThanOrEqual(Math.floor(max * 0.7))
+    expect.soft(reached, `tab reached only ${reached} of ${max} focusables`).toBeGreaterThanOrEqual(Math.floor(max * 0.7))
   })
 
-  test('keyboard navigation: first focused element has a visible focus indicator', async ({ page }) => {
-    await page.goto('/functional-testing')
+  test('@kind:keyboard @focus-indicator first focused element has a visible focus indicator', async ({ page }) => {
+    await page.goto('/functional-testing', { waitUntil: 'domcontentloaded' })
     await page.keyboard.press('Tab')
 
     const hasIndicator = await page.evaluate(() => {
@@ -48,8 +48,8 @@ test.describe('spriteCloud — keyboard navigation @ https://www.spritecloud.com
     expect.soft(hasIndicator, 'first tab-focused element has no visible focus indicator').toBe(true)
   })
 
-  test('keyboard navigation: Escape closes a visible dialog and returns focus', async ({ page }) => {
-    await page.goto('/functional-testing')
+  test('@kind:keyboard @escape-dismiss Escape closes a visible dialog and returns focus', async ({ page }) => {
+    await page.goto('/functional-testing', { waitUntil: 'domcontentloaded' })
     // Find a candidate dialog or modal trigger; skip if absent.
     const trigger = page.locator('[aria-haspopup="dialog"], [data-modal-trigger], [aria-controls][aria-expanded]').first()
     if (await trigger.count() === 0) test.skip()
@@ -65,8 +65,8 @@ test.describe('spriteCloud — keyboard navigation @ https://www.spritecloud.com
     expect.soft(stillOpen, 'dialog should close on Escape').toBe(false)
   })
 
-  test('keyboard navigation: Enter activates focused links/buttons', async ({ page }) => {
-    await page.goto('/functional-testing')
+  test('@kind:keyboard @enter-space Enter activates focused links/buttons', async ({ page }) => {
+    await page.goto('/functional-testing', { waitUntil: 'domcontentloaded' })
     // Find the first interactive control of each type.
     const link = page.locator('a[href]:not([href^="#"]):not([href^="mailto:"]):not([href^="tel:"])').first()
     if (await link.count() === 0) test.skip()
@@ -84,11 +84,11 @@ test.describe('spriteCloud — keyboard navigation @ https://www.spritecloud.com
     }
   })
 
-  test('keyboard navigation: Tab from the last focusable wraps or exits the page', async ({ page }) => {
+  test('@kind:keyboard @no-trap Tab from the last focusable wraps or exits the page', async ({ page }) => {
     // Find the last focusable; Tab once more; confirm focus moved
     // OR landed back on the first focusable (wrap). What we forbid
     // is staying on the same element (a focus trap outside a modal).
-    await page.goto('/functional-testing')
+    await page.goto('/functional-testing', { waitUntil: 'domcontentloaded' })
     const focusables = page.locator('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])')
     const count = await focusables.count()
     if (count < 2) test.skip()

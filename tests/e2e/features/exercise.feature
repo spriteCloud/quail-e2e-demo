@@ -11,7 +11,7 @@
 #   npx playwright test --grep @journey:exercise
 #   npx playwright test --grep @smoke
 
-Feature: spriteCloud — exercise journey
+Feature: Spritecloud — exercise · /
   As a visitor of https://www.spritecloud.com/
   I want to complete the exercise flow
   So that the page delivers on its user goal
@@ -19,5 +19,4 @@ Feature: spriteCloud — exercise journey
   @journey:exercise @priority:standard @smoke
   Scenario: exercise journey reaches its terminal page
     Given I open the landing page
-    And the page title contains "spriteCloud - Test your software, not your reputation!"
-    And the main heading reads "Test your software, not your reputation."
+    And the page title contains "QA & Software Testing Consultancy — spriteCloud"

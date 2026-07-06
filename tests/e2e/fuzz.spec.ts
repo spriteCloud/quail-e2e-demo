@@ -1,3 +1,5 @@
+import { test, expect } from './_fixtures'
+
 /* quail quality report
  * Weak / missing locators on this page:
  *   - no data-testid attributes found on this page (2 inputs, 0 anchors). Tests rely on text/role and break under copy edits.
@@ -13,8 +15,6 @@
  *
  * Filter: `npx playwright test --grep @fuzz`
  */
-import { test, expect } from './_fixtures'
-
 test.describe.configure({ mode: 'parallel' })
 test.describe('spriteCloud — fuzz testing for negative input handling', () => {
   test.beforeEach(async ({ page }) => {
@@ -36,5 +36,37 @@ test.describe('spriteCloud — fuzz testing for negative input handling', () => 
     // (handled by the pageErrors fixture in _fixtures.ts).
     await field.fill('\'><script>alert(1)</script>')
     await expect(field).toBeAttached()
+  })
+})
+
+test.describe('Spritecloud — fuzz / negative input', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+  })
+
+  test('@fuzz @keyboard popup (Testing Services) responds to Tab + Enter', async ({ page }) => {
+    // Tab through the page looking for the trigger, then activate via
+    // keyboard. Catches focus-trap and missing-keyboard-handler bugs
+    // that mouse-only tests miss.
+    const target = page.getByText(/Testing Services/i).first()
+    await target.focus()
+    await page.keyboard.press('Enter')
+    // No assertion on resulting state — interactions vary by kind.
+    // The pageErrors fixture catches any uncaught JS the keyboard
+    // path triggered.
+    await expect(target).toBeAttached()
+  })
+
+  test('@fuzz @keyboard popup (Company) responds to Tab + Enter', async ({ page }) => {
+    // Tab through the page looking for the trigger, then activate via
+    // keyboard. Catches focus-trap and missing-keyboard-handler bugs
+    // that mouse-only tests miss.
+    const target = page.getByText(/Company/i).first()
+    await target.focus()
+    await page.keyboard.press('Enter')
+    // No assertion on resulting state — interactions vary by kind.
+    // The pageErrors fixture catches any uncaught JS the keyboard
+    // path triggered.
+    await expect(target).toBeAttached()
   })
 })

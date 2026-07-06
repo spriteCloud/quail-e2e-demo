@@ -12,7 +12,7 @@
 import { test, expect } from '@playwright/test'
 
 test.describe.configure({ mode: 'parallel' })
-test.describe('spriteCloud — network resilience @ https://www.spritecloud.com/test-automation', () => {
+test.describe('Spritecloud — network resilience @ https://www.spritecloud.com/test-automation', () => {
   test('@kind:network @slow-3g page renders under throttled bandwidth', async ({ page, context }) => {
     // Throttle every request by 1.5s before responding. Page must
     // still render the primary content (h1) within a generous budget.
@@ -25,7 +25,7 @@ test.describe('spriteCloud — network resilience @ https://www.spritecloud.com/
   })
 
   test('@kind:network @offline-reload offline reload shows a sensible failure surface', async ({ page, context }) => {
-    await page.goto('/test-automation')
+    await page.goto('/test-automation', { waitUntil: 'domcontentloaded' })
     await context.setOffline(true)
     // The browser raises a navigation error; we capture it and assert
     // the page didn't silently double-render with stale content.

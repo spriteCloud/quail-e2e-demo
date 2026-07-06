@@ -18,13 +18,13 @@ const LOCALES: Locale[] = [
 ]
 
 test.describe.configure({ mode: 'parallel' })
-test.describe('spriteCloud — i18n locales', () => {
+test.describe('Spritecloud — i18n locales', () => {
   // v0.43: always-attempt baseline — <html lang> attribute must be
   // present even when the site exposes no hreflang siblings. Catches
   // the common a11y/SEO regression where lang is dropped during a
   // framework migration.
   test('@kind:i18n @smoke <html lang> attribute is present', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
     const htmlLang = await page.locator('html').getAttribute('lang')
     expect(htmlLang, '<html lang> attribute should be set on every page').not.toBeNull()
     expect((htmlLang || '').trim().length, '<html lang> should be non-empty').toBeGreaterThan(0)

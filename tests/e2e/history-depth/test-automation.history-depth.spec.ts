@@ -12,13 +12,13 @@
 import { test, expect } from '@playwright/test'
 
 test.describe.configure({ mode: 'parallel' })
-test.describe('spriteCloud — history depth @ https://www.spritecloud.com/test-automation', () => {
+test.describe('Spritecloud — history depth @ https://www.spritecloud.com/test-automation', () => {
   test('@kind:history-depth @smoke back twice then forward keeps the page interactive', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', e => errors.push(e.message))
     page.on('console', m => { if (m.type() === 'error') errors.push(m.text()) })
 
-    await page.goto('/test-automation')
+    await page.goto('/test-automation', { waitUntil: 'domcontentloaded' })
     const firstLink = page.locator('a[href]:not([href^="#"]):not([href^="mailto:"]):not([href^="tel:"])').first()
     if (await firstLink.count() === 0) test.skip()
     await firstLink.click({ timeout: 5000 }).catch(() => {})

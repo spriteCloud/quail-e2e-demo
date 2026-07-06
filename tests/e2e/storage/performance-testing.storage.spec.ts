@@ -12,17 +12,17 @@
 import { test, expect } from '@playwright/test'
 
 test.describe.configure({ mode: 'parallel' })
-test.describe('spriteCloud — storage resilience @ https://www.spritecloud.com/performance-testing', () => {
+test.describe('Spritecloud — storage resilience @ https://www.spritecloud.com/performance-testing', () => {
   test('@kind:storage @smoke renders with empty storage', async ({ page, context }) => {
     await context.clearCookies()
-    await page.goto('/performance-testing')
+    await page.goto('/performance-testing', { waitUntil: 'domcontentloaded' })
     await page.evaluate(() => { try { localStorage.clear(); sessionStorage.clear() } catch {} })
     await page.reload()
     await expect(page.locator('h1, [role="heading"][aria-level="1"]').first()).toBeVisible()
   })
 
   test('@kind:storage @corrupt page survives garbage in storage', async ({ page }) => {
-    await page.goto('/performance-testing')
+    await page.goto('/performance-testing', { waitUntil: 'domcontentloaded' })
     await page.evaluate(() => {
       try {
         localStorage.setItem('user', '{not_json_at_all}')

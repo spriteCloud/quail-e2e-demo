@@ -12,10 +12,10 @@
 import { test, expect } from '@playwright/test'
 
 test.describe.configure({ mode: 'parallel' })
-test.describe('spriteCloud — zoom @ https://www.spritecloud.com/', () => {
+test.describe('Spritecloud — zoom @ https://www.spritecloud.com/', () => {
   for (const zoom of [2.0, 4.0] as const) {
     test(`@kind:zoom @smoke @zoom:${zoom * 100}% h1 stays visible`, async ({ page }) => {
-      await page.goto('/')
+      await page.goto('/', { waitUntil: 'domcontentloaded' })
       // Playwright doesn't expose a true browser-zoom API; emulate via
       // CSS transform on the body. Real ratio differs slightly but the
       // layout-overflow signal we want is identical.

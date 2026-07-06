@@ -16,9 +16,9 @@
 import { test, expect } from '@playwright/test'
 
 test.describe.configure({ mode: 'parallel' })
-test.describe('spriteCloud — a11y landmarks @ https://www.spritecloud.com/functional-testing', () => {
+test.describe('Spritecloud — a11y landmarks @ https://www.spritecloud.com/functional-testing', () => {
   test('@kind:a11y-landmarks @smoke single main + h1 + nav', async ({ page }) => {
-    await page.goto('/functional-testing')
+    await page.goto('/functional-testing', { waitUntil: 'domcontentloaded' })
 
     const mains = await page.locator('main, [role="main"]').count()
     expect.soft(mains, `expected exactly one <main> region`).toBe(1)
@@ -31,7 +31,7 @@ test.describe('spriteCloud — a11y landmarks @ https://www.spritecloud.com/func
   })
 
   test('@kind:a11y-landmarks @negative no focusables inside aria-hidden', async ({ page }) => {
-    await page.goto('/functional-testing')
+    await page.goto('/functional-testing', { waitUntil: 'domcontentloaded' })
     const hiddenFocusables = await page.locator('[aria-hidden="true"]').locator('a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])').count()
     expect.soft(hiddenFocusables, `${hiddenFocusables} focusable elements inside aria-hidden — confusing for screen readers`).toBe(0)
   })
@@ -40,7 +40,7 @@ test.describe('spriteCloud — a11y landmarks @ https://www.spritecloud.com/func
     // Walk every heading in source order. A jump from h1 to h3 (skipping
     // h2) breaks screen-reader navigation. h2 to h4 is the same bug at
     // the next level.
-    await page.goto('/functional-testing')
+    await page.goto('/functional-testing', { waitUntil: 'domcontentloaded' })
     const jumps = await page.evaluate(() => {
       const headings = Array.from(document.querySelectorAll('h1,h2,h3,h4,h5,h6'))
       const levels = headings.map(h => parseInt(h.tagName.slice(1), 10))
@@ -65,7 +65,7 @@ test.describe('spriteCloud — a11y landmarks @ https://www.spritecloud.com/func
     // When ≥2 navs / asides / sections exist, each must carry an
     // accessible name (aria-label, aria-labelledby, or an inner
     // <h2-6>) so screen-reader users can distinguish them.
-    await page.goto('/functional-testing')
+    await page.goto('/functional-testing', { waitUntil: 'domcontentloaded' })
     const unnamed = await page.evaluate(() => {
       const kinds = ['nav', 'aside', 'section']
       const issues: string[] = []
@@ -93,7 +93,7 @@ test.describe('spriteCloud — a11y landmarks @ https://www.spritecloud.com/func
     // The first focusable should either be a skip link OR there must
     // be an in-page anchor to #main / #content / [role=main]. WCAG
     // 2.4.1 ("Bypass Blocks") requires it for keyboard / SR users.
-    await page.goto('/functional-testing')
+    await page.goto('/functional-testing', { waitUntil: 'domcontentloaded' })
     const hasSkipLink = await page.evaluate(() => {
       const candidates = Array.from(document.querySelectorAll('a[href^="#"]'))
       return candidates.some(a => {

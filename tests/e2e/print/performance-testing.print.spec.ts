@@ -11,9 +11,9 @@
 import { test, expect } from '@playwright/test'
 
 test.describe.configure({ mode: 'parallel' })
-test.describe('spriteCloud — print @ https://www.spritecloud.com/performance-testing', () => {
+test.describe('Spritecloud — print @ https://www.spritecloud.com/performance-testing', () => {
   test('@kind:print @smoke renders under media: print', async ({ page }) => {
-    await page.goto('/performance-testing')
+    await page.goto('/performance-testing', { waitUntil: 'domcontentloaded' })
     await page.emulateMedia({ media: 'print' })
     // h1 must still be in the document. Some sites hide the entire
     // chrome under @media print — that's fine — but the content has

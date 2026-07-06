@@ -12,11 +12,11 @@
 import { test, expect } from '@playwright/test'
 
 test.describe.configure({ mode: 'parallel' })
-test.describe('spriteCloud — a11y prefs @ https://www.spritecloud.com/performance-testing', () => {
+test.describe('Spritecloud — a11y prefs @ https://www.spritecloud.com/performance-testing', () => {
   test('@kind:a11y-prefs @reduced-motion renders with prefers-reduced-motion', async ({ browser }) => {
     const context = await browser.newContext({ reducedMotion: 'reduce' })
     const page = await context.newPage()
-    await page.goto('/performance-testing')
+    await page.goto('/performance-testing', { waitUntil: 'domcontentloaded' })
     await expect(page.locator('h1, [role="heading"][aria-level="1"]').first()).toBeVisible()
     // Soft check: any element with a CSS animation should have a
     // reduced or zero duration. We snapshot one animated element if
@@ -32,7 +32,7 @@ test.describe('spriteCloud — a11y prefs @ https://www.spritecloud.com/performa
   test('@kind:a11y-prefs @forced-colors renders under forced-colors', async ({ browser }) => {
     const context = await browser.newContext({ forcedColors: 'active' })
     const page = await context.newPage()
-    await page.goto('/performance-testing')
+    await page.goto('/performance-testing', { waitUntil: 'domcontentloaded' })
     await expect(page.locator('h1, [role="heading"][aria-level="1"]').first()).toBeVisible()
     await context.close()
   })
@@ -40,7 +40,7 @@ test.describe('spriteCloud — a11y prefs @ https://www.spritecloud.com/performa
   test('@kind:a11y-prefs @contrast renders with prefers-contrast: more', async ({ browser }) => {
     const context = await browser.newContext({ contrast: 'more' })
     const page = await context.newPage()
-    await page.goto('/performance-testing')
+    await page.goto('/performance-testing', { waitUntil: 'domcontentloaded' })
     await expect(page.locator('h1, [role="heading"][aria-level="1"]').first()).toBeVisible()
     await context.close()
   })

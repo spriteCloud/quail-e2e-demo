@@ -9,7 +9,7 @@ export function Card({ title }: CardProps) {
   return (
     <div className="card" role="region" aria-label={title}>
       <h2>{title}</h2>
-      <button aria-label="Save">Save</button>
+      <button aria-label="Save changes">Save changes</button>
     </div>
   )
 }

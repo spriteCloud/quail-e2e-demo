@@ -79,6 +79,7 @@ jobs:
       - uses: spriteCloud/quail-review@v1
         env:
           QUAIL_KINDS: journey
+          QUAIL_DIFF_ONLY: '1'
         with:
           pr: ${{ github.event.pull_request.number }}
           version: v1.0.33

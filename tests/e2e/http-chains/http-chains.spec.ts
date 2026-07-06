@@ -11,8 +11,8 @@
 import { test, expect } from '@playwright/test'
 
 test.describe.configure({ mode: 'parallel' })
-test.describe('spriteCloud — HTTP redirect chains for https://www.spritecloud.com', () => {
-  test('follows multi-hop redirects', async ({ request }) => {
+test.describe('Spritecloud — http chains @ https://www.spritecloud.com', () => {
+  test('@kind:http-chain @redirect-chain follows multi-hop redirects', async ({ request }) => {
     // 301 + 302 + 200 — the common cdn → canonical → asset chain.
     const resp = await request.get('/', { maxRedirects: 10 })
     expect(resp.ok()).toBeTruthy()
@@ -21,7 +21,7 @@ test.describe('spriteCloud — HTTP redirect chains for https://www.spritecloud.
     expect.soft(hops, `unexpectedly many redirect hops`).toBeLessThanOrEqual(5)
   })
 
-  test('nonexistent paths return a friendly error', async ({ request }) => {
+  test('@kind:http-chain @410 nonexistent paths return a friendly error', async ({ request }) => {
     const resp = await request.get('/__quail_does_not_exist__', { failOnStatusCode: false })
     expect(resp.status()).toBeGreaterThanOrEqual(400)
     expect(resp.status()).toBeLessThan(600)
@@ -31,7 +31,7 @@ test.describe('spriteCloud — HTTP redirect chains for https://www.spritecloud.
     expect.soft(body.toLowerCase()).not.toContain('stack trace')
   })
 
-  test('server-side rate-limit response shape', async ({ context, page }) => {
+  test('@kind:http-chain @429 server-side rate-limit response shape', async ({ context, page }) => {
     let firstCall = true
     await context.route('**/*', async route => {
       if (firstCall && route.request().url().endsWith('/'.replace(/^\//, ''))) {

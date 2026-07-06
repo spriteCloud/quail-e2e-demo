@@ -53,8 +53,8 @@ async function postSigned(request: any, body: string, signature: string, extra: 
 const skipReason = 'set QUAIL_WEBHOOK_ENDPOINT + QUAIL_WEBHOOK_SECRET to activate signature verification'
 
 test.describe.configure({ mode: 'parallel' })
-test.describe('spriteCloud webhook signature verification', () => {
-  test('valid signed POST is accepted, unsigned POST rejected', async ({ request }) => {
+test.describe('Spritecloud — webhook signing @ https://www.spritecloud.com', () => {
+  test('@kind:webhook-stub @smoke signed POST is accepted; unsigned is rejected', async ({ request }) => {
     if (!ENDPOINT || !SECRET) { test.skip(true, skipReason); return }
     const body = JSON.stringify({ ping: 'quail' })
     const signature = signSha256(body, SECRET)
@@ -72,7 +72,7 @@ test.describe('spriteCloud webhook signature verification', () => {
   // declared the surface yet.
   // ─────────────────────────────────────────────────────────────
 
-  test('replay attack: same body+signature twice rejected', async ({ request }) => {
+  test('@kind:webhook-stub @negative replay-attack: same body+signature twice', async ({ request }) => {
     if (!ENDPOINT || !SECRET) { test.skip(true, skipReason); return }
     const body = JSON.stringify({ id: 'quail-replay-' + createHash('sha256').update(SECRET).digest('hex').slice(0, 8) })
     const signature = signSha256(body, SECRET)
@@ -88,7 +88,7 @@ test.describe('spriteCloud webhook signature verification', () => {
     expect.soft(second.status(), `replay second-attempt status ${second.status()}`).toBeLessThan(500)
   })
 
-  test('expired timestamp rejected', async ({ request }) => {
+  test('@kind:webhook-stub @negative expired-timestamp rejected', async ({ request }) => {
     if (!ENDPOINT || !SECRET) { test.skip(true, skipReason); return }
     const tenMinutesAgo = String(Math.floor(Date.now() / 1000) - 600)
     const body = JSON.stringify({ ping: 'expired' })
@@ -112,7 +112,7 @@ test.describe('spriteCloud webhook signature verification', () => {
     expect(r.status()).toBeLessThan(500)
   })
 
-  test('wrong signature algorithm rejected', async ({ request }) => {
+  test('@kind:webhook-stub @negative wrong-algorithm signature rejected', async ({ request }) => {
     if (!ENDPOINT || !SECRET) { test.skip(true, skipReason); return }
     const body = JSON.stringify({ ping: 'md5-instead-of-sha256' })
     const badSig = signMd5(body, SECRET)
@@ -128,7 +128,7 @@ test.describe('spriteCloud webhook signature verification', () => {
     }
   })
 
-  test('truncated signature rejected', async ({ request }) => {
+  test('@kind:webhook-stub @negative truncated-signature rejected', async ({ request }) => {
     if (!ENDPOINT || !SECRET) { test.skip(true, skipReason); return }
     const body = JSON.stringify({ ping: 'truncated' })
     const signature = signSha256(body, SECRET).slice(0, 16)
@@ -140,7 +140,7 @@ test.describe('spriteCloud webhook signature verification', () => {
     }
   })
 
-  test('tampered body rejected', async ({ request }) => {
+  test('@kind:webhook-stub @negative tampered-body rejected', async ({ request }) => {
     if (!ENDPOINT || !SECRET) { test.skip(true, skipReason); return }
     const originalBody = JSON.stringify({ amount: 100, currency: 'USD' })
     const tamperedBody = JSON.stringify({ amount: 9999999, currency: 'USD' })

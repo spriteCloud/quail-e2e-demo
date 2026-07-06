@@ -101,7 +101,8 @@ jobs:
   generate-diff:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: contains(github.event.pull_request.head.ref, 'validate/') || contains(github.event.pull_request.head.ref, 'demo-') || contains(github.event.pull_request.changed_files, 'src/')
+    # See heal-proactive above for the branch-prefix rationale.
+    if: contains(github.event.pull_request.head.ref, 'validate/') || contains(github.event.pull_request.head.ref, 'demo-') || contains(github.event.pull_request.head.ref, 'proactive/')
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -173,7 +174,11 @@ jobs:
   heal-proactive:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: contains(github.event.pull_request.head.ref, 'proactive/') || contains(github.event.pull_request.changed_files, 'src/')
+    # Runs on any dedicated test branch — validate/, demo-, or
+    # proactive/. `changed_files` is not an available expression, so
+    # branch-prefix is the trigger; the tool itself no-ops cleanly
+    # when there's no source diff to heal.
+    if: contains(github.event.pull_request.head.ref, 'proactive/') || contains(github.event.pull_request.head.ref, 'validate/') || contains(github.event.pull_request.head.ref, 'demo-')
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }

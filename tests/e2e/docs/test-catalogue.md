@@ -9,42 +9,31 @@ journeys it identified, the priority bucket each journey falls into, and
 the spec file generated for it. Treat it as the contract for what this
 suite covers — anything missing here is a coverage gap.
 
-## Pages crawled (30)
+## Pages crawled (19)
 
 | URL | Title | Tags |
 |---|---|---|
-| `https://www.spritecloud.com/` | spriteCloud - Test your software, not your reputation! | `landing`, `landing`, `form`, `interactive` |
-| `https://www.spritecloud.com/contact` | spriteCloud — Meeting Booking Form | `interactive` |
-| `https://www.spritecloud.com/test-automation` | Test Automation | `interactive` |
-| `https://www.spritecloud.com/cybersecurity` | spriteCloud - Penetration Testing | `interactive` |
-| `https://www.spritecloud.com/performance-testing` | spriteCloud - Performance Testing | `interactive` |
-| `https://www.spritecloud.com/functional-testing` | Functional Testing | `interactive` |
-| `https://www.spritecloud.com/devops` | DevOps | `interactive` |
-| `https://www.spritecloud.com/guides` | spriteCloud - Your software testing and QA partner | `list`, `interactive` |
-| `https://www.spritecloud.com/case-studies` | Case Studies | `interactive` |
-| `https://www.spritecloud.com/blog` | Blog | `list`, `interactive` |
-| `https://www.spritecloud.com/about-us` | About Us | `interactive` |
-| `https://www.spritecloud.com/our-community` | Our Community | `interactive` |
-| `https://www.spritecloud.com/careers` | Careers | `interactive` |
-| `https://www.spritecloud.com/vciso` | spriteCloud - vCISO | `interactive` |
-| `https://www.spritecloud.com/case-studies/post-nl` | spriteCloud - Your software testing and QA partner | `interactive` |
-| `https://www.spritecloud.com/case-studies/ben-nl` | spriteCloud - Your software testing and QA partner | `case-study`, `interactive` |
-| `https://www.spritecloud.com/case-study-ecomm-platform` | Case Study - e-commerce platform | `case-study`, `interactive` |
-| `https://www.spritecloud.com/case-studies/citizenm` | spriteCloud - Your software testing and QA partner | `case-study`, `interactive` |
-| `https://www.spritecloud.com/msa` | MSA | `interactive` |
-| `https://www.spritecloud.com/supplier-msa` | supplier MSA | `interactive` |
-| `https://www.spritecloud.com/test-choice` | Test Choice | `interactive` |
-| `https://www.spritecloud.com/guides/what-is-built-in-quality-and-how-can-you-improve-it` | spriteCloud - Your software testing and QA partner | `interactive` |
-| `https://www.spritecloud.com/guides/image-patching-with-copacetic` | spriteCloud - Your software testing and QA partner | `interactive` |
-| `https://www.spritecloud.com/guides/typescript-its-benefits-use-cases-and-pros-in-testing-as-a-language` | spriteCloud - Your software testing and QA partner | `interactive` |
-| `https://www.spritecloud.com/guides/from-sandboxes-to-production-navigating-salesforce-test-automation-like-a-pro` | spriteCloud - Your software testing and QA partner | `interactive` |
-| `https://www.spritecloud.com/guides/transforming-software-testing-a-guide-to-popular-ai-testing-tools` | spriteCloud - Your software testing and QA partner | `interactive` |
-| `https://www.spritecloud.com/guides/detox-guide` | spriteCloud - Your software testing and QA partner | `interactive` |
-| `https://www.spritecloud.com/guides/robot-framework-guide` | spriteCloud - Your software testing and QA partner | `interactive` |
-| `https://www.spritecloud.com/guides/guide-implementing-shift-left-testing-in-an-agile-environment` | spriteCloud - Your software testing and QA partner | `interactive` |
-| `https://www.spritecloud.com/guides/test-management-for-jira-using-xray` | spriteCloud - Your software testing and QA partner | `interactive` |
+| `https://www.spritecloud.com/` | QA & Software Testing Consultancy — spriteCloud | `landing`, `landing`, `interactive` |
+| `https://www.spritecloud.com/functional-testing` | Functional Testing — spriteCloud | `detail`, `interactive` |
+| `https://www.spritecloud.com/test-automation` | Test Automation — spriteCloud | `detail`, `interactive` |
+| `https://www.spritecloud.com/performance-testing` | Performance Testing — spriteCloud | `detail`, `interactive` |
+| `https://www.spritecloud.com/agentic-testing` | Agentic Testing — spriteCloud | `interactive` |
+| `https://www.spritecloud.com/cybersecurity` | Cybersecurity & Penetration Testing — spriteCloud | `interactive` |
+| `https://www.spritecloud.com/work` | Work — spriteCloud | `list`, `detail`, `interactive` |
+| `https://www.spritecloud.com/about` | About — spriteCloud | `detail`, `interactive` |
+| `https://www.spritecloud.com/careers` | Careers — spriteCloud | `detail`, `interactive` |
+| `https://www.spritecloud.com/contact` | Contact — spriteCloud | `contact`, `interactive` |
+| `https://www.spritecloud.com/case-study/oikocredit` | Oikocredit — Case Study — spriteCloud | `detail`, `case-study`, `interactive` |
+| `https://www.spritecloud.com/case-study/postnl` | PostNL — Case Study — spriteCloud | `detail`, `case-study`, `interactive` |
+| `https://www.spritecloud.com/case-study/citizenm` | citizenM — Case Study — spriteCloud | `detail`, `case-study`, `interactive` |
+| `https://www.spritecloud.com/case-study/giftshift` | GiftShift — Case Study — spriteCloud | `detail`, `case-study`, `interactive` |
+| `https://www.spritecloud.com/case-study/ben-nl` | Ben — Case Study — spriteCloud | `detail`, `case-study`, `interactive` |
+| `https://www.spritecloud.com/case-study/ecommerce-performance` | eCommerce platform — Case Study — spriteCloud | `detail`, `case-study`, `interactive` |
+| `https://www.spritecloud.com/services` | Testing Services — spriteCloud | `detail`, `service`, `interactive` |
+| `https://www.spritecloud.com/vacancy/hr-internship` | HR Internship – Process & People — Careers — spriteCloud | `interactive` |
+| `https://www.spritecloud.com/vacancy/test-automation-engineer` | Test Automation Engineer — Careers — spriteCloud | `interactive` |
 
-## Journeys identified (14)
+## Journeys identified (11)
 
 Each journey ships as a Gherkin `.feature` file under `tests/e2e/features/`.
 playwright-bdd compiles features into Playwright specs at config-load
@@ -63,132 +52,107 @@ Filter examples:
 
 | Feature file | Kind | Priority | Steps |
 |---|---|---|---|
-| `tests/e2e/features/convert.feature` | `convert` | `critical` | 1 |
 | `tests/e2e/features/exercise.feature` | `exercise` | `standard` | 1 |
-| `tests/e2e/features/exercise-contact.feature` | `exercise` | `standard` | 1 |
+| `tests/e2e/features/exercise-functional-testing.feature` | `exercise` | `standard` | 1 |
 | `tests/e2e/features/exercise-test-automation.feature` | `exercise` | `standard` | 1 |
-| `tests/e2e/features/research-case-studies-ben-nl.feature` | `research` | `standard` | 2 |
-| `tests/e2e/features/research-case-study-ecomm-platform.feature` | `research` | `standard` | 2 |
-| `tests/e2e/features/research-case-studies-citizenm.feature` | `research` | `standard` | 2 |
-| `tests/e2e/features/browse-guides.feature` | `browse` | `standard` | 2 |
-| `tests/e2e/features/browse-blog.feature` | `browse` | `standard` | 2 |
-| `tests/e2e/features/explore-contact.feature` | `explore` | `nice-to-have` | 2 |
-| `tests/e2e/features/explore-case-studies.feature` | `explore` | `nice-to-have` | 2 |
-| `tests/e2e/features/explore-vciso.feature` | `explore` | `nice-to-have` | 2 |
-| `tests/e2e/features/read-test-automation.feature` | `read` | `nice-to-have` | 2 |
-| `tests/e2e/features/read-cybersecurity.feature` | `read` | `nice-to-have` | 2 |
+| `tests/e2e/features/contact-contact.feature` | `contact` | `critical` | 2 |
+| `tests/e2e/features/research-case-study-oikocredit.feature` | `research` | `standard` | 2 |
+| `tests/e2e/features/research-case-study-postnl.feature` | `research` | `standard` | 2 |
+| `tests/e2e/features/research-case-study-citizenm.feature` | `research` | `standard` | 2 |
+| `tests/e2e/features/browse-functional-testing.feature` | `browse` | `standard` | 3 |
+| `tests/e2e/features/discover-services.feature` | `discover` | `standard` | 2 |
+| `tests/e2e/features/explore-test-automation.feature` | `explore` | `nice-to-have` | 2 |
+| `tests/e2e/features/explore-performance-testing.feature` | `explore` | `nice-to-have` | 2 |
 
 ### Journey detail
-
-#### `convert` — `tests/e2e/features/convert.feature`
-
-Priority: `critical`. 1 step(s).
-
-1. `https://www.spritecloud.com/` — _spriteCloud - Test your software, not your reputation!_
-
 
 #### `exercise` — `tests/e2e/features/exercise.feature`
 
 Priority: `standard`. 1 step(s).
 
-1. `https://www.spritecloud.com/` — _spriteCloud - Test your software, not your reputation!_
+1. `https://www.spritecloud.com/` — _QA & Software Testing Consultancy — spriteCloud_
 
 
-#### `exercise` — `tests/e2e/features/exercise-contact.feature`
+#### `exercise` — `tests/e2e/features/exercise-functional-testing.feature`
 
 Priority: `standard`. 1 step(s).
 
-1. `https://www.spritecloud.com/contact` — _spriteCloud — Meeting Booking Form_
+1. `https://www.spritecloud.com/functional-testing` — _Functional Testing — spriteCloud_
 
 
 #### `exercise` — `tests/e2e/features/exercise-test-automation.feature`
 
 Priority: `standard`. 1 step(s).
 
-1. `https://www.spritecloud.com/test-automation` — _Test Automation_
+1. `https://www.spritecloud.com/test-automation` — _Test Automation — spriteCloud_
 
 
-#### `research` — `tests/e2e/features/research-case-studies-ben-nl.feature`
+#### `contact` — `tests/e2e/features/contact-contact.feature`
 
-Priority: `standard`. 2 step(s).
+Priority: `critical`. 2 step(s).
 
-1. `https://www.spritecloud.com/` — _spriteCloud - Test your software, not your reputation!_
-2. clicked `/case-studies/ben-nl` → `https://www.spritecloud.com/case-studies/ben-nl` — _spriteCloud - Your software testing and QA partner_
-
-
-#### `research` — `tests/e2e/features/research-case-study-ecomm-platform.feature`
-
-Priority: `standard`. 2 step(s).
-
-1. `https://www.spritecloud.com/` — _spriteCloud - Test your software, not your reputation!_
-2. clicked `/case-study-ecomm-platform` → `https://www.spritecloud.com/case-study-ecomm-platform` — _Case Study - e-commerce platform_
+1. `https://www.spritecloud.com/` — _QA & Software Testing Consultancy — spriteCloud_
+2. clicked `/contact` → `https://www.spritecloud.com/contact` — _Contact — spriteCloud_
 
 
-#### `research` — `tests/e2e/features/research-case-studies-citizenm.feature`
+#### `research` — `tests/e2e/features/research-case-study-oikocredit.feature`
 
 Priority: `standard`. 2 step(s).
 
-1. `https://www.spritecloud.com/` — _spriteCloud - Test your software, not your reputation!_
-2. clicked `/case-studies/citizenm` → `https://www.spritecloud.com/case-studies/citizenm` — _spriteCloud - Your software testing and QA partner_
+1. `https://www.spritecloud.com/` — _QA & Software Testing Consultancy — spriteCloud_
+2. clicked `/case-study/oikocredit` → `https://www.spritecloud.com/case-study/oikocredit` — _Oikocredit — Case Study — spriteCloud_
 
 
-#### `browse` — `tests/e2e/features/browse-guides.feature`
-
-Priority: `standard`. 2 step(s).
-
-1. `https://www.spritecloud.com/` — _spriteCloud - Test your software, not your reputation!_
-2. clicked `/guides` → `https://www.spritecloud.com/guides` — _spriteCloud - Your software testing and QA partner_
-
-
-#### `browse` — `tests/e2e/features/browse-blog.feature`
+#### `research` — `tests/e2e/features/research-case-study-postnl.feature`
 
 Priority: `standard`. 2 step(s).
 
-1. `https://www.spritecloud.com/` — _spriteCloud - Test your software, not your reputation!_
-2. clicked `/blog` → `https://www.spritecloud.com/blog` — _Blog_
+1. `https://www.spritecloud.com/` — _QA & Software Testing Consultancy — spriteCloud_
+2. clicked `/case-study/postnl` → `https://www.spritecloud.com/case-study/postnl` — _PostNL — Case Study — spriteCloud_
 
 
-#### `explore` — `tests/e2e/features/explore-contact.feature`
+#### `research` — `tests/e2e/features/research-case-study-citizenm.feature`
 
-Priority: `nice-to-have`. 2 step(s).
+Priority: `standard`. 2 step(s).
 
-1. `https://www.spritecloud.com/` — _spriteCloud - Test your software, not your reputation!_
-2. clicked `/contact` → `https://www.spritecloud.com/contact` — _spriteCloud — Meeting Booking Form_
-
-
-#### `explore` — `tests/e2e/features/explore-case-studies.feature`
-
-Priority: `nice-to-have`. 2 step(s).
-
-1. `https://www.spritecloud.com/` — _spriteCloud - Test your software, not your reputation!_
-2. clicked `/case-studies` → `https://www.spritecloud.com/case-studies` — _Case Studies_
+1. `https://www.spritecloud.com/` — _QA & Software Testing Consultancy — spriteCloud_
+2. clicked `/case-study/citizenm` → `https://www.spritecloud.com/case-study/citizenm` — _citizenM — Case Study — spriteCloud_
 
 
-#### `explore` — `tests/e2e/features/explore-vciso.feature`
+#### `browse` — `tests/e2e/features/browse-functional-testing.feature`
 
-Priority: `nice-to-have`. 2 step(s).
+Priority: `standard`. 3 step(s).
 
-1. `https://www.spritecloud.com/` — _spriteCloud - Test your software, not your reputation!_
-2. clicked `/vciso` → `https://www.spritecloud.com/vciso` — _spriteCloud - vCISO_
-
-
-#### `read` — `tests/e2e/features/read-test-automation.feature`
-
-Priority: `nice-to-have`. 2 step(s).
-
-1. `https://www.spritecloud.com/` — _spriteCloud - Test your software, not your reputation!_
-2. clicked `/test-automation` → `https://www.spritecloud.com/test-automation` — _Test Automation_
+1. `https://www.spritecloud.com/` — _QA & Software Testing Consultancy — spriteCloud_
+2. clicked `/work` → `https://www.spritecloud.com/work` — _Work — spriteCloud_
+3. clicked `/functional-testing` → `https://www.spritecloud.com/functional-testing` — _Functional Testing — spriteCloud_
 
 
-#### `read` — `tests/e2e/features/read-cybersecurity.feature`
+#### `discover` — `tests/e2e/features/discover-services.feature`
+
+Priority: `standard`. 2 step(s).
+
+1. `https://www.spritecloud.com/` — _QA & Software Testing Consultancy — spriteCloud_
+2. clicked `/services` → `https://www.spritecloud.com/services` — _Testing Services — spriteCloud_
+
+
+#### `explore` — `tests/e2e/features/explore-test-automation.feature`
 
 Priority: `nice-to-have`. 2 step(s).
 
-1. `https://www.spritecloud.com/` — _spriteCloud - Test your software, not your reputation!_
-2. clicked `/cybersecurity` → `https://www.spritecloud.com/cybersecurity` — _spriteCloud - Penetration Testing_
+1. `https://www.spritecloud.com/` — _QA & Software Testing Consultancy — spriteCloud_
+2. clicked `/test-automation` → `https://www.spritecloud.com/test-automation` — _Test Automation — spriteCloud_
 
 
-## Fuzz coverage (1)
+#### `explore` — `tests/e2e/features/explore-performance-testing.feature`
+
+Priority: `nice-to-have`. 2 step(s).
+
+1. `https://www.spritecloud.com/` — _QA & Software Testing Consultancy — spriteCloud_
+2. clicked `/performance-testing` → `https://www.spritecloud.com/performance-testing` — _Performance Testing — spriteCloud_
+
+
+## Fuzz coverage (5)
 
 One fuzz spec per page with text-like inputs or interactive components.
 Bounded at 5 emissions total per probe so triage stays tractable.
@@ -196,6 +160,10 @@ Bounded at 5 emissions total per probe so triage stays tractable.
 | Spec | Page |
 |---|---|
 | `tests/e2e/fuzz.spec.ts` | `https://www.spritecloud.com/` |
+| `tests/e2e/functional-testing-fuzz.spec.ts` | `https://www.spritecloud.com/functional-testing` |
+| `tests/e2e/test-automation-fuzz.spec.ts` | `https://www.spritecloud.com/test-automation` |
+| `tests/e2e/performance-testing-fuzz.spec.ts` | `https://www.spritecloud.com/performance-testing` |
+| `tests/e2e/agentic-testing-fuzz.spec.ts` | `https://www.spritecloud.com/agentic-testing` |
 
 ## Quality companions
 

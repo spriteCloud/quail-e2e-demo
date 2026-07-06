@@ -18,8 +18,8 @@
  */
 import { test, expect } from '@playwright/test'
 
-test.describe('spriteCloud — integration database scaffold (skipped)', () => {
-  test.skip('integration-db: CREATE/INSERT/SELECT/DELETE round-trip (wireable)', async ({ request }) => {
+test.describe('Spritecloud — integration: DB scaffold (skipped)', () => {
+  test.skip('@kind:integration-db @wireable @round-trip CREATE / INSERT / SELECT / DELETE round-trip', async ({ request }) => {
     // When wired this test would:
     //   1. Start a Testcontainers DB instance (postgres / mysql / mariadb)
     //   2. Apply the schema declared in quail.yml
@@ -30,7 +30,7 @@ test.describe('spriteCloud — integration database scaffold (skipped)', () => {
     expect(r.ok()).toBeTruthy()
   })
 
-  test.skip('integration-db: transaction rolls back on error (wireable)', async ({ request }) => {
+  test.skip('@kind:integration-db @wireable @transaction-rollback transaction rolls back on error', async ({ request }) => {
     // When wired:
     //   1. Begin transaction
     //   2. POST with one valid + one invalid record
@@ -40,7 +40,7 @@ test.describe('spriteCloud — integration database scaffold (skipped)', () => {
     expect(r.ok()).toBeTruthy()
   })
 
-  test.skip('integration-db: concurrent requests do not exhaust connection pool (wireable)', async ({ request }) => {
+  test.skip('@kind:integration-db @wireable @connection-pool concurrent requests do not exhaust the pool', async ({ request }) => {
     // When wired:
     //   1. Issue N concurrent reads where N > pool.max
     //   2. Confirm all N return < 500

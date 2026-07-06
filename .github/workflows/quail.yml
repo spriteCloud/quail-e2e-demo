@@ -78,7 +78,7 @@ jobs:
 
       - uses: spriteCloud/quail-review@v1
         env:
-          QUAIL_KINDS: journey,touch
+          QUAIL_KINDS: journey,touch,responsive,visual,a11y,perf,storage
         with:
           pr: ${{ github.event.pull_request.number }}
           version: v1.0.39

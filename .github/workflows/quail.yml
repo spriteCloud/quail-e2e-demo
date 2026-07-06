@@ -94,6 +94,26 @@ jobs:
           model: qwen3-coder-next:latest
           log-level: info
 
+  # generate-diff — Diff-driven generate: no target-urls, so the tool
+  # scaffolds from the PR's changed source files only. Proves the
+  # `quail generate` path without the probe short-circuit. Runs only
+  # when the PR touches src/ so the empty-diff case doesn't fire.
+  generate-diff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: contains(github.event.pull_request.head.ref, 'validate/') || contains(github.event.pull_request.head.ref, 'demo-') || contains(github.event.pull_request.changed_files, 'src/')
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: spriteCloud/quail-review@v1
+        with:
+          pr: ${{ github.event.pull_request.number }}
+          version: v1.8.0
+          run-generate: 'true'
+          run-heal: 'false'
+          # No target-urls: falls back to the pure-diff path.
+          log-level: info
+
   # heal — Read smoke's report. If failures exist, open a "quail: heal
   # locators for PR #N" PR with better-anchored replacements. No probe,
   # no generate; this job is single-purpose.
@@ -145,6 +165,25 @@ jobs:
           openai-base-url: http://100.82.34.115:11434/v1
           openai-api-key: ollama
           model: qwen3-coder-next:latest
+          log-level: info
+
+  # heal-proactive — Diff-driven heal without a Playwright report. Reads
+  # the PR diff and proposes locator updates when source anchors
+  # renamed. Complements the report-driven `heal` job above.
+  heal-proactive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: contains(github.event.pull_request.head.ref, 'proactive/') || contains(github.event.pull_request.changed_files, 'src/')
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: spriteCloud/quail-review@v1
+        with:
+          pr: ${{ github.event.pull_request.number }}
+          version: v1.8.0
+          run-generate: 'false'
+          run-heal: 'true'
+          heal-mode: 'proactive'
           log-level: info
 
   # verify — Run the generated tests on the bot's follow-up PR branch.

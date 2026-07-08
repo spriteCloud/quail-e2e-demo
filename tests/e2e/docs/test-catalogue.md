@@ -9,7 +9,7 @@ journeys it identified, the priority bucket each journey falls into, and
 the spec file generated for it. Treat it as the contract for what this
 suite covers — anything missing here is a coverage gap.
 
-## Pages crawled (19)
+## Pages crawled (25)
 
 | URL | Title | Tags |
 |---|---|---|
@@ -21,6 +21,7 @@ suite covers — anything missing here is a coverage gap.
 | `https://www.spritecloud.com/cybersecurity` | Cybersecurity & Penetration Testing — spriteCloud | `interactive` |
 | `https://www.spritecloud.com/work` | Work — spriteCloud | `list`, `detail`, `interactive` |
 | `https://www.spritecloud.com/about` | About — spriteCloud | `detail`, `interactive` |
+| `https://www.spritecloud.com/events` | Events & Meetups — spriteCloud | `list`, `detail`, `interactive` |
 | `https://www.spritecloud.com/careers` | Careers — spriteCloud | `detail`, `interactive` |
 | `https://www.spritecloud.com/contact` | Contact — spriteCloud | `contact`, `interactive` |
 | `https://www.spritecloud.com/case-study/oikocredit` | Oikocredit — Case Study — spriteCloud | `detail`, `case-study`, `interactive` |
@@ -30,6 +31,11 @@ suite covers — anything missing here is a coverage gap.
 | `https://www.spritecloud.com/case-study/ben-nl` | Ben — Case Study — spriteCloud | `detail`, `case-study`, `interactive` |
 | `https://www.spritecloud.com/case-study/ecommerce-performance` | eCommerce platform — Case Study — spriteCloud | `detail`, `case-study`, `interactive` |
 | `https://www.spritecloud.com/services` | Testing Services — spriteCloud | `detail`, `service`, `interactive` |
+| `https://www.spritecloud.com/event/barcelona-it-community-meetup-may-2026` | DIAG-formtrue-pastfalse-ctatrue | `detail`, `interactive` |
+| `https://www.spritecloud.com/event/qa-community-meetup-april-2026` | DIAG-formtrue-pastfalse-ctatrue | `detail`, `interactive` |
+| `https://www.spritecloud.com/event/qa-meetup-november-2025` | DIAG-formtrue-pastfalse-ctatrue | `detail`, `interactive` |
+| `https://www.spritecloud.com/event/summer-qa-meetup-august-2025` | DIAG-formtrue-pastfalse-ctatrue | `detail`, `interactive` |
+| `https://www.spritecloud.com/event/qa-meetup-march-2025` | DIAG-formtrue-pastfalse-ctatrue | `detail`, `interactive` |
 | `https://www.spritecloud.com/vacancy/hr-internship` | HR Internship – Process & People — Careers — spriteCloud | `interactive` |
 | `https://www.spritecloud.com/vacancy/test-automation-engineer` | Test Automation Engineer — Careers — spriteCloud | `interactive` |
 

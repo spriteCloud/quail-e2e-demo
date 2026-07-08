@@ -5,6 +5,6 @@ Feature: Explore functional testing services
   Scenario: Explore functional testing services
     Given I open "/functional-testing"
     When I click the link "Testing Services"
-    When I click the link "Functional Testing"
-    When I click the link "Case Studies"
-    Then I see the heading "Case Studies"
+    Then I see the link "Functional Testing"
+    Then I see the link "Test Automation"
+    Then I see the link "Case Studies"

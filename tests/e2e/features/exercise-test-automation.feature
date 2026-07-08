@@ -5,6 +5,5 @@ Feature: Explore test automation services
   Scenario: Explore test automation services
     Given I open "/test-automation"
     When I click the link "Test Automation"
-    When I click the link "Functional Testing"
     When I click the link "Case Studies"
-    Then I see the heading "Case Studies"
+    Then I see the heading "Find out what automation would do for your team"

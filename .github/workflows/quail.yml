@@ -213,12 +213,22 @@ jobs:
         run: |
           set -eo pipefail
           SHORT="${HEAD_SHA:0:7}"
+          # v1.14 — branch-aware kind order. Demo/heal-* PRs are staged
+          # to demonstrate healing; verify should look at the heal-pr
+          # bot PR FIRST so the heal output actually gets exercised.
+          # For every other PR, tests-pr (generate output) is the
+          # natural artifact.
+          #
           # v1.9 — try tests-pr- first (generate output), fall back to
           # heal-pr- (heal-on-failure / heal-proactive output). Whichever
           # branch quail-review pushed most recently for this SHA is what
           # we verify. Prevents PR #94's heal-proactive artifact from
           # being invisible to verify.
-          for kind in tests-pr heal-pr; do
+          case "${{ github.event.pull_request.head.ref }}" in
+            demo/heal-*) KINDS="heal-pr tests-pr" ;;
+            *)           KINDS="tests-pr heal-pr" ;;
+          esac
+          for kind in $KINDS; do
             BRANCH="quail/${kind}-${PR_NUM}-${SHORT}"
             echo "Looking for bot PR on branch $BRANCH"
             PR=$(gh pr list --head "$BRANCH" --state open --limit 1 --json number -q '.[0].number' || true)

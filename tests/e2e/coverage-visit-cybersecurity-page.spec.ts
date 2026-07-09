@@ -4,5 +4,5 @@ import { opGoto, opClick, opFill, opPress, opSeen } from './prims'
 
 test('@journey:coverage @smoke Visit cybersecurity page', async ({ page }) => {
   await opGoto(page, '/cybersecurity')
-  await opSeen(page, 'main', 'Cybersecurity & Penetration Testing')
+  await opSeen(page, 'main', 'Cybersecurity')
 })

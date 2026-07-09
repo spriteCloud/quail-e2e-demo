@@ -1,0 +1,98 @@
+name: quail-trigger
+
+# One-button trigger for quail. Provide either:
+#   * pr → runs HEAL against that PR (auto-picks on-failure vs proactive
+#          based on the PR's latest CI run, unless `mode` overrides)
+#   * url → runs GENERATE against that URL
+#
+# Kept intentionally small: three inputs, one job. If you find yourself
+# reaching for a 4th input, the composite action `spriteCloud/quail-
+# review@v1` accepts ~20 more and you can wire a specialised workflow
+# instead of overloading this one.
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: 'PR number → runs HEAL. Leave empty to run generate.'
+        required: false
+        type: string
+      url:
+        description: 'URL to probe → runs GENERATE. Ignored if pr is set.'
+        required: false
+        type: string
+        default: 'https://www.spritecloud.com'
+      mode:
+        description: 'Heal mode override (only used when pr is set).'
+        required: false
+        type: choice
+        default: auto
+        options: [auto, on-failure, proactive]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Connect to Netbird
+        uses: Alemiz112/netbird-connect@b2bea073dea42968276f717128c57e739dd514f3
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
+          hostname: gh-quail-trigger-${{ github.run_id }}
+      - name: Reach DGX through Netbird
+        run: |
+          set -u
+          for i in $(seq 1 30); do
+            if curl -fsS -m 3 http://100.82.34.115:11434/api/version >/dev/null 2>&1; then
+              echo "DGX reachable after ${i} attempt(s)." && exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::DGX unreachable after 60s." && exit 1
+
+      # Auto-detect heal mode when pr is set + mode=auto. Reads the
+      # PR's most recent quail workflow run: if it failed, on-failure
+      # (heal from Playwright report). Otherwise proactive (heal from
+      # source diff). Manual choice via `mode` short-circuits this.
+      - name: Resolve heal mode
+        id: heal
+        if: inputs.pr != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.mode }}" != "auto" ]; then
+            echo "mode=${{ inputs.mode }}" >> "$GITHUB_OUTPUT"
+            echo "heal-mode = ${{ inputs.mode }} (manual override)"
+            exit 0
+          fi
+          branch=$(gh pr view "${{ inputs.pr }}" --json headRefName -q .headRefName)
+          last=$(gh run list --branch "$branch" --workflow quail --limit 1 --json conclusion -q '.[0].conclusion' || echo "")
+          case "$last" in
+            failure) picked=on-failure ;;
+            *)       picked=proactive ;;
+          esac
+          echo "last quail run on $branch: '${last:-none}' → heal-mode = $picked"
+          echo "mode=$picked" >> "$GITHUB_OUTPUT"
+
+      - uses: spriteCloud/quail-review@v1
+        with:
+          version: v1.8.0
+          pr: ${{ inputs.pr }}
+          target-urls: ${{ inputs.pr == '' && inputs.url || '' }}
+          run-generate: ${{ inputs.pr == '' && inputs.url != '' }}
+          run-heal:     ${{ inputs.pr != '' }}
+          heal-mode:    ${{ steps.heal.outputs.mode }}
+          openai-base-url: http://100.82.34.115:11434/v1
+          openai-api-key: ollama
+          model: qwen3-coder-next:latest
+          log-level: info

@@ -30,7 +30,14 @@ const bddTestDir = defineBddConfig({
   steps: 'tests/e2e/steps/*.ts',
 })
 
-const extrasTestMatch = /\.(api|fuzz|a11y|responsive|perf|security|health|observability|contract|i18n|visual|visual-states|keyboard|landmarks|zoom|prefs|network|storage|print|race|clipboard|http-chains|file-upload|iframe|date-edges|pwa|history-depth|touch|dragdrop|auth-expiry|locale-switch|graphql|webhook|mobile|deeplink|heal-demo|integration(-(db|broker|cache|storage|search|auth|obs))?)\.spec\.ts$/
+// v1.9 — widened to accept any `.spec.ts` under tests/e2e/. Previous
+// whitelist-of-suffixes silently skipped every quail-generated file
+// (default output is `<name>.spec.ts`, not `<name>.<axis>.spec.ts`),
+// which meant `verify` grep'd @smoke but found only the pre-existing
+// broken-locator sentinel — guaranteed red regardless of what
+// generate/heal produced. Tag filtering (`--grep @smoke`) still
+// works; filename regex is no longer the gate.
+const extrasTestMatch = /\.spec\.ts$/
 
 function projectsForBrowser(browser: 'chromium' | 'firefox' | 'webkit') {
   const deviceProfile =

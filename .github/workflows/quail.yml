@@ -213,16 +213,23 @@ jobs:
         run: |
           set -eo pipefail
           SHORT="${HEAD_SHA:0:7}"
-          BRANCH="quail/tests-pr-${PR_NUM}-${SHORT}"
-          echo "Looking for bot PR on branch $BRANCH"
-          PR=$(gh pr list --head "$BRANCH" --state open --limit 1 --json number -q '.[0].number' || true)
-          if [ -z "$PR" ]; then
-            echo "::notice::No quail bot PR on $BRANCH yet; nothing to verify."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "pr=$PR" >> "$GITHUB_OUTPUT"
-          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          # v1.9 — try tests-pr- first (generate output), fall back to
+          # heal-pr- (heal-on-failure / heal-proactive output). Whichever
+          # branch quail-review pushed most recently for this SHA is what
+          # we verify. Prevents PR #94's heal-proactive artifact from
+          # being invisible to verify.
+          for kind in tests-pr heal-pr; do
+            BRANCH="quail/${kind}-${PR_NUM}-${SHORT}"
+            echo "Looking for bot PR on branch $BRANCH"
+            PR=$(gh pr list --head "$BRANCH" --state open --limit 1 --json number -q '.[0].number' || true)
+            if [ -n "$PR" ]; then
+              echo "pr=$PR" >> "$GITHUB_OUTPUT"
+              echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "::notice::No quail bot PR (tests-pr- or heal-pr-) for SHA $SHORT; nothing to verify."
+          echo "skip=true" >> "$GITHUB_OUTPUT"
       - name: Checkout bot PR branch
         if: steps.find.outputs.skip != 'true'
         run: |

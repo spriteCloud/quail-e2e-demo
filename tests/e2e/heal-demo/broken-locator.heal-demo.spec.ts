@@ -16,5 +16,5 @@ test('@smoke @heal-demo: spritecloud homepage shows the hero anchor', async ({ p
   // propose a higher-stability anchor from the existing suite's a11y
   // specs (typically getByRole('heading') or getByText for the hero
   // copy).
-  await expect(page.getByTestId('quail-heal-demo-anchor')).toBeVisible({ timeout: 4000 })
+  await expect(page.getByText('Your email address')).toBeVisible({ timeout: 4000 })
 })

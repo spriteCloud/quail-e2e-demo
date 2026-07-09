@@ -16,11 +16,12 @@ export class Newsletter {
   constructor(public props: NewsletterProps) {}
 
   /**
-   * Subscribe an email to the list. The `via` field mirrors the list
+   * Enroll an email in the list. Renamed from `subscribe` to align
+   * with the SUT's own "enrol" copy. The `via` field mirrors the list
    * identifier so quail's API spec generator can bind a signup form's
    * hidden `list-id` field to the same route on the SUT.
    */
-  subscribe(email: string): { ok: boolean; via: string; cadence: NewsletterCadence } {
+  enroll(email: string): { ok: boolean; via: string; cadence: NewsletterCadence } {
     return {
       ok: true,
       via: this.props.listId,

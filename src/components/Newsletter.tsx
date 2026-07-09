@@ -26,7 +26,7 @@ export function Newsletter(props: NewsletterProps) {
       />
       <button
         type="submit"
-        data-testid="newsletter-subscribe-btn"
+        data-testid="newsletter-signup-btn"
       >
         Subscribe
       </button>

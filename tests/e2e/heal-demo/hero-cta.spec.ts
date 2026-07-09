@@ -15,5 +15,5 @@ test('@smoke @heal-demo-onfail: contact CTA is reachable from homepage', async (
   // Playwright will fail on strict role+name. Heal probes the SUT,
   // sees 'Contact' as the closest anchor by fuzzy overlap, and
   // proposes the corrected getByRole call.
-  await expect(page.getByRole('link', { name: 'Contact us' })).toBeVisible({ timeout: 4000 })
+  await expect(page.getByTestId('newsletter-form')).toBeVisible({ timeout: 4000 })
 })

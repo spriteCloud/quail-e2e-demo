@@ -21,9 +21,9 @@ self-hosted `qwen3-coder-next` via DGX.
 
 Three PRs, one per mode, sitting open as living examples:
 
-- **`demo/generate`** — adds a new component. Watch the `generate` job open a bot PR with a fresh suite covering the new surface.
-- **`demo/heal-no-diff`** — renames an existing SUT selector that a `@smoke` test uses. Watch smoke fail, then `heal` (on-failure) read the Playwright report and open a fix PR.
-- **`demo/heal-with-diff`** — renames a SUT selector no `@smoke` test uses. Watch `heal-proactive` open a fix PR from the diff alone, with smoke never turning red.
+- **[#92 — `demo/generate`](https://github.com/spriteCloud/quail-e2e-demo/pull/92)** — adds a new `Pricing` component. Watch the `generate` job open a bot PR with a fresh suite covering the new surface.
+- **[#93 — `demo/heal-no-diff`](https://github.com/spriteCloud/quail-e2e-demo/pull/93)** — appends one Gherkin step asserting a heading that doesn't exist on the SUT. Watch smoke turn red, then `heal` (on-failure) read the Playwright report and open a fix PR proposing a real locator.
+- **[#94 — `demo/heal-with-diff`](https://github.com/spriteCloud/quail-e2e-demo/pull/94)** — renames `Newsletter.subscribe()` → `Newsletter.enroll()`. Watch `heal-proactive` fire on the diff alone; if any test references the old name it opens a fix PR, if none do it reports 'no changes needed' (the correct signal — quail doesn't invent false proposals).
 
 ## Trigger it yourself
 

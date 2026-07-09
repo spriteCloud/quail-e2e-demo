@@ -81,7 +81,7 @@ jobs:
           QUAIL_KINDS: journey
         with:
           pr: ${{ github.event.pull_request.number }}
-          version: v1.13.0
+          version: v1.14.0
           run-generate: 'true'
           run-heal: 'false'
           target-urls: https://www.spritecloud.com
@@ -133,7 +133,7 @@ jobs:
       - uses: spriteCloud/quail-review@v1
         with:
           pr: ${{ github.event.pull_request.number }}
-          version: v1.13.0
+          version: v1.14.0
           run-generate: 'false'
           run-heal: 'true'
           heal-mode: 'on-failure'
@@ -177,7 +177,7 @@ jobs:
       - uses: spriteCloud/quail-review@v1
         with:
           pr: ${{ github.event.pull_request.number }}
-          version: v1.13.0
+          version: v1.14.0
           run-generate: 'false'
           run-heal: 'true'
           heal-mode: 'proactive'

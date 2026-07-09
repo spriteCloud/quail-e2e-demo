@@ -86,7 +86,7 @@ jobs:
 
       - uses: spriteCloud/quail-review@v1
         with:
-          version: v1.14.0
+          version: v1.15.0
           pr: ${{ inputs.pr }}
           target-urls: ${{ inputs.pr == '' && inputs.url || '' }}
           run-generate: ${{ inputs.pr == '' && inputs.url != '' }}

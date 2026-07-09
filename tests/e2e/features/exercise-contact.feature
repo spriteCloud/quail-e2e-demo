@@ -21,3 +21,8 @@ Feature: spriteCloud — exercise flow
     Given I open the landing page
     And the page title contains "spriteCloud — Meeting Booking Form"
     And the main heading reads "Let's Chat"
+    # Intentional demo-only breakage: this heading does not exist on
+    # spritecloud.com. Smoke will fail, quail's heal-on-failure job
+    # reads the Playwright report + probes the live SUT + proposes a
+    # replacement locator in a follow-up "quail: heal locators" PR.
+    And I see the heading "Book Your Free Consultation Right Now Please"

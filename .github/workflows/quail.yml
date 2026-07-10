@@ -15,6 +15,11 @@ jobs:
   # Known SUT debt stays in the ledger; regressions surface red.
   # Heal consumes the same artifact regardless.
   smoke:
+    # Demo-story policy — demo/explore spotlights `quail explore` alone
+    # (ephemeral suite, branded report, no persisted artefacts). Skipping
+    # smoke here keeps that promise. Real customer PRs don't hit this
+    # branch name, so the filter is a no-op for them.
+    if: github.event.pull_request.head.ref != 'demo/explore'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -59,7 +64,7 @@ jobs:
     # triggers a new generate run which produces YET MORE bot PRs, ad
     # infinitum. verify already had this guard; extending to generate,
     # heal, heal-proactive.
-    if: github.event.pull_request.user.login != 'quail-bot'
+    if: github.event.pull_request.user.login != 'quail-bot' && github.event.pull_request.head.ref != 'demo/explore'
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -110,7 +115,7 @@ jobs:
     # v1.15 — also skip on bot-authored PRs to break the recursion:
     # a quail-bot PR would otherwise trigger heal → propose a new bot
     # PR → trigger heal → repeat.
-    if: ${{ !cancelled() && needs.smoke.result != 'skipped' && github.event.pull_request.user.login != 'quail-bot' }}
+    if: ${{ !cancelled() && needs.smoke.result != 'skipped' && github.event.pull_request.user.login != 'quail-bot' && github.event.pull_request.head.ref != 'demo/explore' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -162,7 +167,11 @@ jobs:
     timeout-minutes: 15
     # v1.15 — same bot-PR guard as generate/heal. Otherwise a bot PR
     # on a demo/ branch loops the whole heal-proactive chain.
-    if: (contains(github.event.pull_request.head.ref, 'demo/') || contains(github.event.pull_request.head.ref, 'demo-') || contains(github.event.pull_request.head.ref, 'validate/') || contains(github.event.pull_request.head.ref, 'proactive/')) && github.event.pull_request.user.login != 'quail-bot'
+    # Narrowed from `contains(head.ref, 'demo/')` to just `demo/heal` so
+    # unrelated demo/* branches (demo/generate, demo/explore) don't
+    # accidentally trigger proactive heal. The demo scenario for
+    # heal-proactive lives on this one branch.
+    if: github.event.pull_request.head.ref == 'demo/heal' && github.event.pull_request.user.login != 'quail-bot'
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -208,7 +217,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    if: github.event.pull_request.user.login != 'quail-bot'
+    if: github.event.pull_request.user.login != 'quail-bot' && github.event.pull_request.head.ref != 'demo/explore'
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }

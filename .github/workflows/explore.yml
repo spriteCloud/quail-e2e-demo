@@ -43,6 +43,13 @@ jobs:
         with:
           version: source
 
+          # A cross-repo PAT is needed while the composite action's
+          # source-install path clones the private quail-core repo. The
+          # default GITHUB_TOKEN is scoped to this repo only. Drop this
+          # override once quail-core cuts a release and the temporary
+          # source-build path is retired.
+          github-token: ${{ secrets.QUAIL_PAT }}
+
           # Skip generate/heal — this workflow is explore-only.
           run-generate: 'false'
           run-heal: 'false'

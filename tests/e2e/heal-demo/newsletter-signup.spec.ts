@@ -19,6 +19,6 @@ test('@heal-demo-proactive: newsletter signup form is visible', async ({ page })
     </form>
   `)
   await expect(page.getByTestId('newsletter-form')).toBeVisible()
-  await expect(page.getByTestId('newsletter-email-input')).toBeVisible()
+  await expect(page.getByTestId('newsletter-email-field')).toBeVisible()
   await expect(page.getByTestId('newsletter-subscribe-btn')).toBeVisible()
 })

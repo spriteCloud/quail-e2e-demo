@@ -10,10 +10,10 @@ import { test, expect } from '@playwright/test'
 
 test('@smoke @heal-demo-onfail: primary CTA is reachable from homepage', async ({ page }) => {
   await page.goto('https://www.spritecloud.com/')
-  // Intentionally broken: capital-T 'Get in Touch' vs the SUT's
-  // 'Get in touch' (lowercase t). Playwright's strict role+name lookup
-  // is case-sensitive so this fails. Heal probes the SUT, sees the
-  // real 'Get in touch' link with tokenOverlap=3 against ['get','in',
-  // 'touch'], and proposes the case-corrected getByRole call.
-  await expect(page.getByRole('link', { name: 'Get in Touch' })).toBeVisible({ timeout: 4000 })
+  // Intentionally broken: 'Reach the team' does not appear anywhere on
+  // spritecloud.com. Playwright's role name matcher (case-insensitive
+  // substring) has no way to match this. Heal probes the SUT and finds
+  // 'Talk to our team' — tokenOverlap 2/3 against ['reach','the','team']
+  // — as the highest-ranked replacement candidate.
+  await expect(page.getByRole('link', { name: 'Reach the team' })).toBeVisible({ timeout: 4000 })
 })

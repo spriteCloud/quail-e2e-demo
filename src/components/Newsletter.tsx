@@ -20,7 +20,7 @@ export function Newsletter(props: NewsletterProps) {
       <label htmlFor="newsletter-email">Email</label>
       <input
         id="newsletter-email"
-        data-testid="newsletter-email-input"
+        data-testid="newsletter-email-field"
         type="email"
         placeholder="you@company.com"
       />

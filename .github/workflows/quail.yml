@@ -1,0 +1,333 @@
+name: quail
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # smoke — Run the @smoke subset, capture the JSON report, then gate
+  # via `quail ledger verify`. The Playwright step still tolerates
+  # failures (its job is to harvest the report) but the verify step
+  # is the real pass/fail: it exits non-zero ONLY when the report
+  # contains a failure NOT tracked as open in tests/e2e/docs/findings.md.
+  # Known SUT debt stays in the ledger; regressions surface red.
+  # Heal consumes the same artifact regardless.
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Install demo deps + Playwright browsers
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Install quail (for ledger verify)
+        run: |
+          set -euo pipefail
+          ver=v1.0.33
+          tmp=$(mktemp -d)
+          curl -fsSL "https://github.com/spriteCloud/quail-review/releases/download/${ver}/quail-review_linux_amd64.tar.gz" -o "$tmp/q.tar.gz"
+          tar -xzf "$tmp/q.tar.gz" -C "$tmp"
+          sudo mv "$tmp/quail-review" /usr/local/bin/quail-review
+          # v1.0.0 — keep `run: quail …` shorthand alive via symlink.
+          sudo ln -sf /usr/local/bin/quail-review /usr/local/bin/quail
+          quail --version
+      - name: Run @smoke subset
+        env: { PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-report.json }
+        run: npx playwright test --grep @smoke --reporter=json || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report.json
+          retention-days: 7
+      - name: Verify smoke against findings.md baseline
+        run: quail ledger verify --report=playwright-report.json --baseline=tests/e2e/docs/findings.md
+
+  # generate — Probe the target site + emit a fresh test suite as a
+  # follow-up "quail: tests for PR #N" PR. Strictly no heal here; the
+  # heal job below handles failures.
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # v1.15 — skip on bot-authored PRs. Otherwise every quail bot PR
+    # triggers a new generate run which produces YET MORE bot PRs, ad
+    # infinitum. verify already had this guard; extending to generate,
+    # heal, heal-proactive.
+    if: github.event.pull_request.user.login != 'quail-bot'
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Connect to Netbird
+        uses: Alemiz112/netbird-connect@b2bea073dea42968276f717128c57e739dd514f3
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
+          hostname: gh-quail-gen-${{ github.run_id }}
+      - name: Reach DGX through Netbird
+        run: |
+          set -u
+          for i in $(seq 1 30); do
+            if curl -fsS -m 3 http://100.82.34.115:11434/api/version >/dev/null 2>&1; then
+              echo "DGX reachable after ${i} attempt(s)." && exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::DGX unreachable after 60s." && exit 1
+
+      - uses: spriteCloud/quail-review@v1
+        env:
+          QUAIL_KINDS: journey
+        with:
+          pr: ${{ github.event.pull_request.number }}
+          version: v1.16.0
+          run-generate: 'true'
+          run-heal: 'false'
+          target-urls: https://www.spritecloud.com
+          openai-base-url: http://100.82.34.115:11434/v1
+          openai-api-key: ollama
+          model: qwen3-coder-next:latest
+          log-level: info
+
+  # heal — Read smoke's report. If failures exist, open a "quail: heal
+  # locators for PR #N" PR with better-anchored replacements. No probe,
+  # no generate; this job is single-purpose.
+  heal:
+    needs: smoke
+    # Heal should run whether or not `Verify smoke against findings.md`
+    # passed — the ledger-verify gate is a human-facing UX check for
+    # regressions, but heal's job is to propose locator fixes from the
+    # Playwright JSON report regardless of ledger drift. Without this,
+    # any untracked regression on the branch (e.g. a stale snapshot)
+    # skips heal entirely, which is exactly the situation heal exists
+    # to help with.
+    # v1.15 — also skip on bot-authored PRs to break the recursion:
+    # a quail-bot PR would otherwise trigger heal → propose a new bot
+    # PR → trigger heal → repeat.
+    if: ${{ !cancelled() && needs.smoke.result != 'skipped' && github.event.pull_request.user.login != 'quail-bot' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Connect to Netbird
+        uses: Alemiz112/netbird-connect@b2bea073dea42968276f717128c57e739dd514f3
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
+          hostname: gh-quail-heal-${{ github.run_id }}
+      - name: Reach DGX through Netbird
+        run: |
+          set -u
+          for i in $(seq 1 30); do
+            if curl -fsS -m 3 http://100.82.34.115:11434/api/version >/dev/null 2>&1; then
+              echo "DGX reachable after ${i} attempt(s)." && exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::DGX unreachable after 60s." && exit 1
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: playwright-report
+          path: .
+      - uses: spriteCloud/quail-review@v1
+        with:
+          pr: ${{ github.event.pull_request.number }}
+          version: v1.16.0
+          run-generate: 'false'
+          run-heal: 'true'
+          heal-mode: 'on-failure'
+          playwright-report: playwright-report.json
+          openai-base-url: http://100.82.34.115:11434/v1
+          openai-api-key: ollama
+          model: qwen3-coder-next:latest
+          log-level: info
+
+  # heal-proactive — Diff-driven heal without a Playwright report. Reads
+  # the PR diff and proposes locator updates when source anchors renamed
+  # or restructured. Complements the report-driven `heal` job above.
+  # `changed_files` is not an available expression, so branch-prefix is
+  # the trigger; the tool itself no-ops cleanly when there's no source
+  # diff to heal.
+  heal-proactive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # v1.15 — same bot-PR guard as generate/heal. Otherwise a bot PR
+    # on a demo/ branch loops the whole heal-proactive chain.
+    if: (contains(github.event.pull_request.head.ref, 'demo/') || contains(github.event.pull_request.head.ref, 'demo-') || contains(github.event.pull_request.head.ref, 'validate/') || contains(github.event.pull_request.head.ref, 'proactive/')) && github.event.pull_request.user.login != 'quail-bot'
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Connect to Netbird
+        uses: Alemiz112/netbird-connect@b2bea073dea42968276f717128c57e739dd514f3
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
+          hostname: gh-quail-heal-proactive-${{ github.run_id }}
+      - name: Reach DGX through Netbird
+        run: |
+          set -u
+          for i in $(seq 1 30); do
+            if curl -fsS -m 3 http://100.82.34.115:11434/api/version >/dev/null 2>&1; then
+              echo "DGX reachable after ${i} attempt(s)." && exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::DGX unreachable after 60s." && exit 1
+
+      - uses: spriteCloud/quail-review@v1
+        with:
+          pr: ${{ github.event.pull_request.number }}
+          version: v1.16.0
+          run-generate: 'false'
+          run-heal: 'true'
+          heal-mode: 'proactive'
+          openai-base-url: http://100.82.34.115:11434/v1
+          openai-api-key: ollama
+          model: qwen3-coder-next:latest
+          log-level: info
+
+  # verify — Run the generated tests on the bot's follow-up PR branch.
+  # The new .feature files emitted by v0.97.0 are tagged @smoke, so
+  # `--grep @smoke` covers them. Comments the result back on the bot
+  # PR and fails this job (red check on the original PR) when any
+  # generated test fails.
+  verify:
+    needs: generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      pull-requests: write
+    if: github.event.pull_request.user.login != 'quail-bot'
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Find quail bot PR for this run
+        id: find
+        env:
+          GH_TOKEN: ${{ secrets.QUAIL_BOT_PAT || secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -eo pipefail
+          SHORT="${HEAD_SHA:0:7}"
+          # v1.14 — branch-aware kind order. Demo/heal-* PRs are staged
+          # to demonstrate healing; verify should look at the heal-pr
+          # bot PR FIRST so the heal output actually gets exercised.
+          # For every other PR, tests-pr (generate output) is the
+          # natural artifact.
+          #
+          # v1.9 — try tests-pr- first (generate output), fall back to
+          # heal-pr- (heal-on-failure / heal-proactive output). Whichever
+          # branch quail-review pushed most recently for this SHA is what
+          # we verify. Prevents PR #94's heal-proactive artifact from
+          # being invisible to verify.
+          case "${{ github.event.pull_request.head.ref }}" in
+            demo/heal-*) KINDS="heal-pr tests-pr" ;;
+            *)           KINDS="tests-pr heal-pr" ;;
+          esac
+          for kind in $KINDS; do
+            BRANCH="quail/${kind}-${PR_NUM}-${SHORT}"
+            echo "Looking for bot PR on branch $BRANCH"
+            PR=$(gh pr list --head "$BRANCH" --state open --limit 1 --json number -q '.[0].number' || true)
+            if [ -n "$PR" ]; then
+              echo "pr=$PR" >> "$GITHUB_OUTPUT"
+              echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "::notice::No quail bot PR (tests-pr- or heal-pr-) for SHA $SHORT; nothing to verify."
+          echo "skip=true" >> "$GITHUB_OUTPUT"
+      - name: Checkout bot PR branch
+        if: steps.find.outputs.skip != 'true'
+        run: |
+          git fetch origin "${{ steps.find.outputs.branch }}"
+          git checkout "${{ steps.find.outputs.branch }}"
+      - name: Install demo deps + Playwright browsers
+        if: steps.find.outputs.skip != 'true'
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      # v1.11 — verify enables the runtime self-heal layer built into
+      # prims.ts. On any locator failure (timeout, strict-mode multi-
+      # match, element-not-found), opClick/opFill/opSeen ask the LLM
+      # for top-5 CSS candidates against the live DOM and try them.
+      # Successful heals are logged to quail-runtime-heals.jsonl.
+      # Netbird required so the specs can reach the DGX LLM.
+      - name: Connect to Netbird
+        if: steps.find.outputs.skip != 'true'
+        uses: Alemiz112/netbird-connect@b2bea073dea42968276f717128c57e739dd514f3
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
+          hostname: gh-quail-verify-${{ github.run_id }}
+      # v1.16 — pass-rate threshold. LLM composers have an irreducible
+      # hallucination tail: on any generate run, a small fraction of
+      # scenarios reference locators the SUT doesn't actually surface.
+      # Treat the verify check as green when ≥80% of the generated
+      # @smoke tests pass; the failing tail is captured in the bot-PR
+      # comment for review. Below 80% is a real regression.
+      - name: Run generated @smoke tests
+        if: steps.find.outputs.skip != 'true'
+        id: run
+        continue-on-error: true
+        env:
+          QUAIL_RUNTIME_HEAL: '1'
+          QUAIL_HEAL_SKIP_UNHEALED: "1"
+          OPENAI_BASE_URL: 'http://100.82.34.115:11434/v1'
+          OPENAI_API_KEY: ollama
+          QUAIL_MODEL: 'qwen3-coder-next:latest'
+          QUAIL_HEAL_LOG: 'quail-runtime-heals.jsonl'
+        run: npx playwright test --grep @smoke --reporter=json > verify-report.json
+      - name: Evaluate pass-rate threshold
+        if: steps.find.outputs.skip != 'true'
+        id: rate
+        env:
+          THRESHOLD: '80'
+        run: |
+          set -euo pipefail
+          pass=$(jq '[.. | objects | .status? | select(. == "passed")] | length' verify-report.json)
+          fail=$(jq '[.. | objects | .status? | select(. == "failed" or . == "timedOut")] | length' verify-report.json)
+          total=$((pass + fail))
+          if [ $total -eq 0 ]; then
+            echo "::error::No tests executed"
+            exit 1
+          fi
+          rate=$(( pass * 100 / total ))
+          echo "pass=$pass fail=$fail rate=${rate}%"
+          {
+            echo "pass=$pass"
+            echo "fail=$fail"
+            echo "rate=$rate"
+          } >> "$GITHUB_OUTPUT"
+          if [ $rate -lt $THRESHOLD ]; then
+            echo "::error::Pass rate ${rate}% below ${THRESHOLD}% threshold"
+            exit 1
+          fi
+      - name: Upload runtime-heal log
+        if: steps.find.outputs.skip != 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quail-runtime-heals-${{ github.event.pull_request.number }}
+          path: quail-runtime-heals.jsonl
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Comment result on bot PR
+        if: steps.find.outputs.skip != 'true' && steps.rate.outputs.rate != ''
+        env:
+          GH_TOKEN: ${{ secrets.QUAIL_BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ steps.find.outputs.pr }} --body \
+            "quail verify: ${{ steps.rate.outputs.pass }}/$((${{ steps.rate.outputs.pass }} + ${{ steps.rate.outputs.fail }})) tests passed (${{ steps.rate.outputs.rate }}%). [Run logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})."

@@ -1,0 +1,56 @@
+name: quail-explore
+
+# Ephemeral change-aware adversarial exploration of the demo target.
+#
+# Runs on every PR: the `quail explore` command generates a Playwright
+# suite into a temp dir, executes it once, and prints a Gherkin-formatted
+# report to this step's stdout. The composite action then wraps that
+# report in a spriteCloud-branded HTML page and uploads it as the
+# `quail-explore-report` artifact, so reviewers can open the HTML from
+# the run summary without cloning anything.
+#
+# Wiring notes:
+#   - `fetch-depth: 2` lets `git diff HEAD~1..HEAD` work when the PR's
+#     change context can't be resolved via GITHUB_EVENT_PATH.
+#   - `version: source` builds quail from `spriteCloud/quail-review@<ref>`
+#     because the `explore` command is still on `feat/explore`. Flip
+#     back to `version: latest` (or drop the input) once the feature is
+#     released. See the ponytail note in the action's install step.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  explore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Adversarial explore against the demo target
+        uses: spriteCloud/quail-review@feat/explore
+        with:
+          version: source
+
+          # Skip generate/heal — this workflow is explore-only.
+          run-generate: 'false'
+          run-heal: 'false'
+
+          # Change-aware context for the LLM prioritisation hints.
+          pr: ${{ github.event.number }}
+
+          # Explore surface.
+          explore-url: https://www.spritecloud.com
+          explore-focus: auth,injection,state-corrupt,race,boundary
+          explore-depth: shallow

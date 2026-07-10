@@ -24,5 +24,5 @@ test('@smoke @heal-demo-proactive: newsletter signup form is visible', async ({ 
   await expect(page.getByTestId('newsletter-email-input')).toBeVisible()
   // Intentionally the OLD testid — heal-proactive rewrites this line
   // to 'newsletter-signup-btn' on the healed spec.
-  await expect(page.getByTestId('newsletter-subscribe-btn')).toBeVisible()
+  await expect(page.getByTestId('newsletter-signup-btn')).toBeVisible()
 })

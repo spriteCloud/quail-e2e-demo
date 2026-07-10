@@ -8,12 +8,12 @@
 // similar) in a bot PR.
 import { test, expect } from '@playwright/test'
 
-test('@smoke @heal-demo-onfail: contact CTA is reachable from homepage', async ({ page }) => {
+test('@smoke @heal-demo-onfail: primary CTA is reachable from homepage', async ({ page }) => {
   await page.goto('https://www.spritecloud.com/')
-  // Intentionally broken: 'Contact us' (with 'us') is close to
-  // spritecloud's actual 'Contact' link but not an exact match, so
-  // Playwright will fail on strict role+name. Heal probes the SUT,
-  // sees 'Contact' as the closest anchor by fuzzy overlap, and
-  // proposes the corrected getByRole call.
-  await expect(page.getByRole('link', { name: 'Contact us' })).toBeVisible({ timeout: 4000 })
+  // Intentionally broken: capital-T 'Get in Touch' vs the SUT's
+  // 'Get in touch' (lowercase t). Playwright's strict role+name lookup
+  // is case-sensitive so this fails. Heal probes the SUT, sees the
+  // real 'Get in touch' link with tokenOverlap=3 against ['get','in',
+  // 'touch'], and proposes the case-corrected getByRole call.
+  await expect(page.getByRole('link', { name: 'Get in Touch' })).toBeVisible({ timeout: 4000 })
 })

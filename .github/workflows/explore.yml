@@ -38,6 +38,26 @@ jobs:
         with:
           go-version: '1.25'
 
+      # Reach DGX for the adversarial attack-plan composer. Explore
+      # calls the LLM per requested category and validates every
+      # response against the guardrails spec.
+      - name: Connect to Netbird
+        uses: Alemiz112/netbird-connect@b2bea073dea42968276f717128c57e739dd514f3
+        with:
+          setup-key: ${{ secrets.NETBIRD_SETUP_KEY }}
+          management-url: ${{ secrets.NETBIRD_MANAGEMENT_URL }}
+          hostname: gh-quail-explore-${{ github.run_id }}
+      - name: Reach DGX through Netbird
+        run: |
+          set -u
+          for i in $(seq 1 30); do
+            if curl -fsS -m 3 http://100.82.34.115:11434/api/version >/dev/null 2>&1; then
+              echo "DGX reachable after ${i} attempt(s)." && exit 0
+            fi
+            sleep 2
+          done
+          echo "::warning::DGX unreachable after 60s — explore will fall back to the stamped template."
+
       - name: Adversarial explore against the demo target
         uses: spriteCloud/quail-review@feat/explore
         with:
@@ -57,6 +77,15 @@ jobs:
 
           # Change-aware context for the LLM prioritisation hints.
           pr: ${{ github.event.number }}
+
+          # LLM endpoint for the attack-plan composer. Same DGX-hosted
+          # qwen3-coder-next the generate/heal jobs use. Without this,
+          # explore falls back to the honest "not exercised" stamped
+          # template.
+          explore-llm: http://100.82.34.115:11434/v1
+          openai-base-url: http://100.82.34.115:11434/v1
+          openai-api-key: ollama
+          model: qwen3-coder-next:latest
 
           # Explore surface.
           explore-url: https://www.spritecloud.com

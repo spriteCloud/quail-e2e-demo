@@ -43,6 +43,14 @@ jobs:
         with:
           version: source
 
+          # Cross-repo PAT so the composite action's source-build path
+          # can clone the private quail-core repo. This whole block
+          # (github-token + version: source) evaporates once quail-core
+          # cuts a release with the Explorer contract — at that point
+          # this workflow becomes `uses: spriteCloud/quail-review@v1`
+          # with no explicit token and no version override.
+          github-token: ${{ secrets.QUAIL_PAT }}
+
           # Skip generate/heal — this workflow is explore-only.
           run-generate: 'false'
           run-heal: 'false'

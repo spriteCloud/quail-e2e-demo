@@ -1,71 +1,78 @@
-# quail demo
+# quail demo — explore
 
-Quail is spriteCloud's E2E test tool. It **generates** Playwright tests
-from a website or a code diff, and **heals** stale locators when
-selectors move — either after a real test failure or preemptively from
-a source diff.
+Quail is spriteCloud's E2E test tool. It **explores** live applications
+for real bugs: on every PR, it generates a throwaway Playwright suite
+against the target URL, executes it once, and prints a human-readable
+Gherkin report. Nothing is committed back — the tests are ephemeral;
+only the report survives, wrapped in a spriteCloud-branded HTML page
+and uploaded as a run artifact.
 
-This repo is the demo playground. It runs the real `spriteCloud/quail-
-review@v1.8.0` action against `https://www.spritecloud.com` on
-self-hosted `qwen3-coder-next` via DGX.
+This repo is the demo playground. It runs `spriteCloud/quail-review@feat/explore`
+against `https://www.spritecloud.com`.
 
-## The three modes
+## The two axes that make `explore` different
 
-| Mode | What triggers it | What it produces | Wall-time |
-|---|---|---|---|
-| **generate** | New PR that adds source (or `workflow_dispatch` with a `url`) | `quail: tests for PR #N` bot PR with ~40 fresh journey specs | ~4-8 min |
-| **heal — on failure** | A `@smoke` test fails on CI (report-driven) | `quail: heal locators for PR #N` bot PR with locator fixes | ~2-3 min |
-| **heal — proactive** | Source-side rename with no test failure (diff-driven) | `quail: heal locators for PR #N` bot PR from just the diff | ~1-2 min |
+- **Ephemeral by default.** Generated `.spec.ts` and `.feature` files
+  live in an `os.MkdirTemp` workdir and are wiped on exit. Only the
+  Gherkin report survives, streamed to stdout and rendered as HTML for
+  the workflow artifact. Pass `--persist` to keep files under `--workdir`.
+- **Change-aware by default.** On every run the last change is
+  auto-detected — PR diff via `$GITHUB_EVENT_PATH` in CI, or
+  `git diff HEAD~1..HEAD` locally. Only the changed file **paths**
+  (never content) are forwarded to the LLM to prioritise its
+  attack-plan targets. The deterministic layer still probes every
+  discovered element regardless.
 
 ## Watch the demo
 
-Three PRs, one per mode, sitting open as living examples:
-
-- **[#92 — `demo/generate`](https://github.com/spriteCloud/quail-e2e-demo/pull/92)** — adds a new `Pricing` component. Watch the `generate` job open a bot PR with a fresh suite covering the new surface.
-- **[#93 — `demo/heal-no-diff`](https://github.com/spriteCloud/quail-e2e-demo/pull/93)** — appends one Gherkin step asserting a heading that doesn't exist on the SUT. Watch smoke turn red, then `heal` (on-failure) read the Playwright report and open a fix PR proposing a real locator.
-- **[#94 — `demo/heal-with-diff`](https://github.com/spriteCloud/quail-e2e-demo/pull/94)** — renames `Newsletter.subscribe()` → `Newsletter.enroll()`. Watch `heal-proactive` fire on the diff alone; if any test references the old name it opens a fix PR, if none do it reports 'no changes needed' (the correct signal — quail doesn't invent false proposals).
+Open a PR against `main` (this file's `demo/explore-showcase` branch is
+the reference example). GitHub Actions runs `quail-explore` and posts a
+`quail-explore-report` artifact to the run summary: an HTML page with
+the syntax-highlighted Gherkin report, targeted at the URL above and
+prioritised by the PR's changed paths.
 
 ## Trigger it yourself
 
-**Actions → quail-trigger → Run workflow**:
+**PR-driven**: the `quail-explore` workflow fires on every `pull_request`
+event. Nothing else to configure.
 
-- Provide **`url`** (leave `pr` empty) → runs generate against that URL.
-- Provide **`pr`** (leave `url` empty) → runs heal against that PR. `mode` defaults to `auto`: on-failure if the PR's latest CI failed, proactive otherwise. Override with `on-failure` or `proactive`.
+**Local**: install `quail` from `spriteCloud/quail-review@feat/explore`
+and run
 
-The 21-input composite action lives at `.github/workflows/quail.yml`.
-`quail-trigger.yml` is a 3-input wrapper for the demo path.
+```
+quail explore --url https://www.spritecloud.com \
+  --focus auth,injection,state-corrupt,race,boundary \
+  --depth shallow
+```
 
-## Comment `/quail` on any PR
-
-Fires `quail-review.yml` — quail-review fetches the PR diff, asks the
-LLM for `## Core Changes` + `## Verdict`, posts one markdown comment.
-Wall-time ~2 min against a 100-file diff. See PR #84 (closed) for an
-example transcript that shows the same command run once with a small
-model (shallow verdict) and once with `qwen3-coder-next` (deep verdict).
+The Gherkin report streams to stdout; the ephemeral temp dir is wiped
+on exit.
 
 ## Stack
 
-- Composite action: `spriteCloud/quail-review@v1.8.0`
-- Model: `qwen3-coder-next:latest` on self-hosted DGX (via Netbird)
-- LLM output cap: 1024 tokens (per prompt)
-- Test framework: Playwright + `playwright-bdd` for Gherkin round-trip
-- Ledger gate: `quail ledger verify --baseline=tests/e2e/docs/findings.md`
+- Composite action: `spriteCloud/quail-review@feat/explore` (temp; will
+  move to a released tag once the Explorer contract lands in a
+  `quail-core` release)
+- Explore engine: 12 adversarial attack categories
+  (boundary, injection, state-corrupt, race, auth, data-edge,
+  cross-feature, flow-interrupt, sequence, role-switch, upstream-dep,
+  cumulative)
+- Guardrails spec: `internal/spec/explore_guardrails.md` in
+  `quail-review` — every LLM response is validated against it before
+  use; invalid responses are dropped and the deterministic fallback
+  wins.
+- Report styling: spriteCloud brand tokens (copper `#C0805A` primary,
+  deep-water `#1B365D` headers, warm-white `#FAFAF7` page,
+  Inter / Fira Code system stacks, pixel-bar section markers).
 
 ## Repo layout
 
 ```
 .github/workflows/
-  quail.yml           # pull_request — smoke, generate, heal, heal-proactive, verify
-  quail-review.yml    # issue_comment → /quail Core Changes + Verdict
-  quail-trigger.yml   # workflow_dispatch — pr → heal, url → generate
+  explore.yml         # pull_request → quail explore → branded HTML artifact
 
 src/components/       # SUT source (Hero, ContactForm, Subscribe, Newsletter)
 
-tests/e2e/
-  features/           # 14 Gherkin journeys, @smoke tagged
-  heal-demo/          # broken-locator sentinel (tracked in ledger)
-  steps/  lib/        # bdd step defs + reusable helpers
-  docs/               # findings.md ledger, test-catalogue.md
-  _fixtures.ts        # shared page fixture
-  fuzz.spec.ts        # single fuzz spec
+tests/e2e/            # legacy Playwright/Gherkin suite — kept for reference
+                      # but no longer required by the explore workflow
 ```

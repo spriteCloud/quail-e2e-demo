@@ -87,21 +87,18 @@ jobs:
           openai-api-key: ollama
           model: qwen3-coder-next:latest
 
-          # Explore surface. ING's public hypotheek calculator is
-          # form-heavy (real inputs, real validation errors) — a much
-          # better exploratory target than the mostly-static marketing
-          # landing.
-          #
-          # Firefox is required: vanilla headless Chromium trips ING's
-          # HTTP/2 fingerprint block (net::ERR_HTTP2_PROTOCOL_ERROR).
-          # The composite action forwards `browsers` into QUAIL_ENGINE
-          # which the executor threads into playwright.config.
-          explore-url: https://www.ing.nl/particulier/hypotheek/hypotheek-berekenen
-          browsers: firefox
+          # Explore surface. the-internet.herokuapp.com is the industry-
+          # standard Playwright-demo target: deterministic forms, no
+          # cookie wall, dozens of testable interactions across pages.
+          # Perfect for showing the full compose→execute→report pipeline
+          # end-to-end. Real-world sites (ING, banks, EU commerce) have
+          # cookie walls and WAF fingerprints — that's what the probe +
+          # executor i18n/vendor dismisser handles per-navigation now.
+          explore-url: https://the-internet.herokuapp.com/
           explore-focus: boundary,data-edge,injection,state-corrupt
-          # standard depth lets the mindmap crawl reach off-origin
-          # pages (calculator flow spans several) so the LLM can
-          # target the form-bearing subpage directly.
+          # standard depth crawls a handful of subpages so the LLM sees
+          # /login, /inputs, /forgot_password etc. in KNOWN PAGES and
+          # picks the form-bearing one per category.
           explore-depth: standard
           # Timeboxed exploratory session — the LLM loops (feeding
           # forward already-tried selectors) until this expires or two

@@ -94,8 +94,8 @@ jobs:
           # end-to-end. Real-world sites (ING, banks, EU commerce) have
           # cookie walls and WAF fingerprints — that's what the probe +
           # executor i18n/vendor dismisser handles per-navigation now.
-          explore-url: https://the-internet.herokuapp.com/
-          explore-focus: boundary,data-edge,injection,state-corrupt
+          explore-url: https://the-internet.herokuapp.com/login
+          explore-focus: boundary,data-edge,injection,state-corrupt,auth
           # standard depth crawls a handful of subpages so the LLM sees
           # /login, /inputs, /forgot_password etc. in KNOWN PAGES and
           # picks the form-bearing one per category.

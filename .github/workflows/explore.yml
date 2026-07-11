@@ -87,11 +87,24 @@ jobs:
           openai-api-key: ollama
           model: qwen3-coder-next:latest
 
-          # Explore surface.
-          explore-url: https://www.spritecloud.com
-          explore-focus: auth,injection,state-corrupt,race,boundary
-          explore-depth: shallow
+          # Explore surface. ING's public hypotheek calculator is
+          # form-heavy (real inputs, real validation errors) — a much
+          # better exploratory target than the mostly-static marketing
+          # landing.
+          #
+          # Firefox is required: vanilla headless Chromium trips ING's
+          # HTTP/2 fingerprint block (net::ERR_HTTP2_PROTOCOL_ERROR).
+          # The composite action forwards `browsers` into QUAIL_ENGINE
+          # which the executor threads into playwright.config.
+          explore-url: https://www.ing.nl/particulier/hypotheek/hypotheek-berekenen
+          browsers: firefox
+          explore-focus: boundary,data-edge,injection,state-corrupt
+          # standard depth lets the mindmap crawl reach off-origin
+          # pages (calculator flow spans several) so the LLM can
+          # target the form-bearing subpage directly.
+          explore-depth: standard
           # Timeboxed exploratory session — the LLM loops (feeding
           # forward already-tried selectors) until this expires or two
-          # consecutive rounds produce nothing new.
-          explore-timebox: 90s
+          # consecutive rounds produce nothing new. 120s covers the
+          # multi-page crawl + per-page execution comfortably.
+          explore-timebox: 120s

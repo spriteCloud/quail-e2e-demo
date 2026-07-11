@@ -91,3 +91,7 @@ jobs:
           explore-url: https://www.spritecloud.com
           explore-focus: auth,injection,state-corrupt,race,boundary
           explore-depth: shallow
+          # Timeboxed exploratory session — the LLM loops (feeding
+          # forward already-tried selectors) until this expires or two
+          # consecutive rounds produce nothing new.
+          explore-timebox: 90s

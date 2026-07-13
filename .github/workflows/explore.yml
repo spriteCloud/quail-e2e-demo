@@ -87,11 +87,20 @@ jobs:
           openai-api-key: ollama
           model: qwen3-coder-next:latest
 
-          # Explore surface.
+          # Explore surface — the spriteCloud marketing site itself.
+          # A real-world hardened site: cookie-wall dismisser + wider
+          # selector fallback + multilingual regex + per-navigation
+          # dismissal all apply. If nothing surfaces, the report reads
+          # a clean "no anomalies observed" — that's an honest and
+          # positive result for a well-defended surface.
           explore-url: https://www.spritecloud.com
-          explore-focus: auth,injection,state-corrupt,race,boundary
-          explore-depth: shallow
+          explore-focus: boundary,data-edge,injection,state-corrupt,auth
+          # standard depth = up to 5 pages, BFS depth 2 — enough to
+          # reach the contact form / booking flow the marketing site
+          # links out to without spidering the whole domain.
+          explore-depth: standard
           # Timeboxed exploratory session — the LLM loops (feeding
           # forward already-tried selectors) until this expires or two
-          # consecutive rounds produce nothing new.
-          explore-timebox: 90s
+          # consecutive rounds produce nothing new. 120s covers the
+          # multi-page crawl + per-page execution comfortably.
+          explore-timebox: 120s
